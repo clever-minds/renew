@@ -1,112 +1,91 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Clients') }}
-            </h2>
-            <button x-data @click="$dispatch('open-modal', 'create-client')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded shadow">
-                + New Client
-            </button>
-        </div>
+        Clients
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Search and Filter Bar -->
-            <div class="mb-4 flex gap-4">
-                <form method="GET" action="{{ route('app.clients.index') }}" class="flex-1 flex gap-4">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search clients..." class="w-full md:w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    <select name="status" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="">All Statuses</option>
-                        <option value="active" @selected(request('status') === 'active')>Active</option>
-                        <option value="inactive" @selected(request('status') === 'inactive')>Inactive</option>
-                    </select>
-                    <button type="submit" class="bg-white border border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded shadow-sm hover:bg-gray-50">Filter</button>
-                </form>
-            </div>
+    <div class="space-y-6">
+        <!-- Action Bar -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+            <h3 class="text-sm font-bold text-gray-500 uppercase tracking-widest px-2">Client Management</h3>
+            <button x-data @click="$dispatch('open-modal', 'create-client')" 
+                    class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-100">
+                <i class="fas fa-plus mr-2"></i> New Client
+            </button>
+        </div>
 
-            <!-- Data Table (Cards on Mobile, Table on Desktop) -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <table class="min-w-full divide-y divide-gray-200 hidden md:table">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th scope="col" class="relative px-6 py-3"><span class="sr-only">Edit</span></th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse ($clients as $client)
-                                <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ route('app.clients.show', $client) }}'">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="font-medium text-gray-900">{{ $client->name }}</div>
-                                        <div class="text-sm text-gray-500">{{ $client->email }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $client->company ?? '-' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $client->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                            {{ ucfirst($client->status) }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button @click.stop="$dispatch('open-drawer', 'edit-client-{{ $client->id }}')" class="text-indigo-600 hover:text-indigo-900">Quick Edit</button>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="px-6 py-4 text-center text-gray-500">No clients found.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                    
-                    <!-- Mobile View -->
-                    <div class="md:hidden space-y-4">
-                        @foreach ($clients as $client)
-                        <div class="border rounded p-4 shadow-sm relative">
-                            <h3 class="font-bold">{{ $client->name }}</h3>
-                            <p class="text-sm text-gray-600">{{ $client->email }}</p>
-                            <span class="absolute top-4 right-4 px-2 text-xs rounded-full {{ $client->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">{{ ucfirst($client->status) }}</span>
-                        </div>
-                        @endforeach
-                    </div>
-
-                    <div class="mt-4">
-                        {{ $clients->links() }}
-                    </div>
-                </div>
+        <!-- Clients Table Card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="overflow-x-auto">
+                <table class="w-full" id="clients-table">
+                    <thead class="bg-gray-50/50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Company</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                </table>
             </div>
         </div>
     </div>
+
+    <script type="text/javascript">
+        $(function () {
+            var table = $('#clients-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: "{{ route('app.clients.index') }}",
+                columns: [
+                    {data: 'name', name: 'name'},
+                    {data: 'company', name: 'company'},
+                    {data: 'email', name: 'email'},
+                    {data: 'status', name: 'status'},
+                    {data: 'action', name: 'action', orderable: false, searchable: false},
+                ],
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search clients...",
+                    lengthMenu: "_MENU_ entries",
+                },
+                dom: '<"flex flex-col md:flex-row justify-between items-center mb-4 gap-4"lf>rt<"flex flex-col md:flex-row justify-between items-center mt-4 gap-4"ip>',
+            });
+        });
+    </script>
     
-    <!-- Alpine JS Modal Component Placeholder -->
+    <!-- Create Client Modal -->
     <x-modal name="create-client" title="Add New Client">
-        <form method="POST" action="{{ route('app.clients.store') }}" class="space-y-4">
+        <form method="POST" action="{{ route('app.clients.store') }}" class="space-y-5 p-1">
             @csrf
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Full Name</label>
-                <input type="text" name="name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="col-span-2 md:col-span-1">
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Full Name</label>
+                    <input type="text" name="name" required class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-gray-900" placeholder="John Doe">
+                </div>
+                <div class="col-span-2 md:col-span-1">
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Email Address</label>
+                    <input type="email" name="email" required class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-gray-900" placeholder="john@example.com">
+                </div>
+                <div class="col-span-2 md:col-span-1">
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Company (Optional)</label>
+                    <input type="text" name="company" class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-gray-900" placeholder="Acme Inc.">
+                </div>
+                <div class="col-span-2 md:col-span-1">
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Phone Number</label>
+                    <input type="text" name="phone" class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-gray-900" placeholder="+1 (555) 000-0000">
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Email Address</label>
-                <input type="email" name="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Company Name (Optional)</label>
-                <input type="text" name="company" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Phone Number</label>
-                <input type="text" name="phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-            </div>
-            <div class="mt-6 flex justify-end gap-3">
-                <button type="button" x-on:click="show = false" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-bold">Cancel</button>
-                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold shadow-lg shadow-indigo-200">Create Client</button>
+            
+            <div class="pt-4 flex items-center justify-end space-x-3 border-t border-gray-100 mt-6">
+                <button type="button" x-on:click="show = false" class="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-100 transition-all">
+                    Create Client
+                </button>
             </div>
         </form>
     </x-modal>
 </x-app-layout>
+

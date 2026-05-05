@@ -34,20 +34,36 @@ class AdminController extends Controller
         return view('admin.dashboard', compact('totalTenants', 'activeTenants', 'totalSaaSRevenue', 'recentTenants'));
     }
 
-    public function tenants(Request $request): View
+    public function tenants(Request $request)
     {
-        $query = DB::table('tenants')
-            ->join('saas_plans', 'tenants.saas_plan_id', '=', 'saas_plans.id')
-            ->select('tenants.*', 'saas_plans.name as plan_name');
+        if ($request->ajax()) {
+            $query = DB::table('tenants')
+                ->join('saas_plans', 'tenants.saas_plan_id', '=', 'saas_plans.id')
+                ->select('tenants.*', 'saas_plans.name as plan_name');
 
-        if ($request->filled('search')) {
-            $query->where('tenants.name', 'like', '%' . $request->search . '%')
-                  ->orWhere('tenants.email', 'like', '%' . $request->search . '%');
+            return \Yajra\DataTables\Facades\DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('action', function($row){
+                    $btn = '';
+                    if($row->status === 'active') {
+                        $btn = '<a href="'.route('admin.tenants.suspend', $row->id).'" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><i class="fas fa-pause"></i></a>';
+                    } else {
+                        $btn = '<a href="'.route('admin.tenants.activate', $row->id).'" class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><i class="fas fa-play"></i></a>';
+                    }
+                    return '<div class="flex items-center space-x-2">'.$btn.'</div>';
+                })
+                ->editColumn('status', function($row){
+                    $class = $row->status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800';
+                    return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium '.$class.'">'.ucfirst($row->status).'</span>';
+                })
+                ->editColumn('created_at', function($row){
+                    return \Carbon\Carbon::parse($row->created_at)->format('M d, Y');
+                })
+                ->rawColumns(['action', 'status'])
+                ->make(true);
         }
 
-        $tenants = $query->orderBy('created_at', 'desc')->paginate(20);
-
-        return view('admin.tenants.index', compact('tenants'));
+        return view('admin.tenants.index');
     }
 
     public function suspendTenant(int $id): RedirectResponse

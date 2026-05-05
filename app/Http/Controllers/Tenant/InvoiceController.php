@@ -10,35 +10,105 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
 use App\Enums\InvoiceStatus;
+use App\Models\Client;
+use App\Http\Requests\Tenant\StoreInvoiceRequest;
+use Illuminate\Http\RedirectResponse;
 
 class InvoiceController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request)
     {
-        // Thin controller eager loading
-        $query = DB::table('invoices')
-            ->join('clients', 'invoices.client_id', '=', 'clients.id')
-            ->where('invoices.tenant_id', session('tenant_id'))
-            ->select('invoices.*', 'clients.name as client_name', 'clients.email as client_email');
+        if ($request->ajax()) {
+            $query = DB::table('invoices')
+                ->join('clients', 'invoices.client_id', '=', 'clients.id')
+                ->where('invoices.tenant_id', session('tenant_id'))
+                ->select('invoices.*', 'clients.name as client_name', 'clients.email as client_email');
 
-        if ($request->filled('status')) {
-            $query->where('invoices.status', $request->get('status'));
+            return \Yajra\DataTables\Facades\DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('action', function($row){
+                    $viewUrl = route('app.invoices.show', $row->id);
+                    return '<a href="'.$viewUrl.'" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"><i class="fas fa-eye"></i></a>';
+                })
+                ->editColumn('total', function($row){
+                    return '$' . number_format((float)$row->total, 2);
+                })
+                ->editColumn('status', function($row){
+                    $class = $row->status === 'paid' ? 'bg-emerald-100 text-emerald-800' : ($row->status === 'unpaid' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800');
+                    return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium '.$class.'">'.ucfirst($row->status).'</span>';
+                })
+                ->editColumn('due_date', function($row){
+                    return \Carbon\Carbon::parse($row->due_date)->format('M d, Y');
+                })
+                ->rawColumns(['action', 'status'])
+                ->make(true);
         }
 
-        if ($request->filled('search')) {
-            $search = $request->get('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('invoices.invoice_number', 'like', "%{$search}%")
-                  ->orWhere('clients.name', 'like', "%{$search}%");
-            });
+        return view('app.invoices.index');
+    }
+
+    public function create(): View
+    {
+        $clients = Client::orderBy('name')->get();
+        return view('app.invoices.create', compact('clients'));
+    }
+
+    public function store(StoreInvoiceRequest $request): RedirectResponse
+    {
+        $data = $request->validated();
+
+        // Generate invoice number
+        $invoiceNumber = 'INV-' . date('Y') . '-' . str_pad((DB::table('invoices')->where('tenant_id', session('tenant_id'))->count() + 1), 4, '0', STR_PAD_LEFT);
+
+        // Calculate totals
+        $subtotal = 0;
+        $items = [];
+
+        foreach ($data['items'] as $item) {
+            $lineTotal = $item['quantity'] * $item['unit_price'];
+            $subtotal += $lineTotal;
+            $items[] = [
+                'description' => $item['description'],
+                'quantity' => $item['quantity'],
+                'unit_price' => $item['unit_price'],
+                'total' => $lineTotal,
+            ];
         }
 
-        $invoices = $query->orderBy('invoices.issue_date', 'desc')->paginate(15);
+        $taxRate = $data['tax_rate'] ?? 0;
+        $taxTotal = $subtotal * ($taxRate / 100);
+        $total = $subtotal + $taxTotal;
 
-        // Required to maintain pagination state when using Query Builder directly
-        $invoices->appends($request->all());
+        // Create invoice
+        $invoiceId = DB::table('invoices')->insertGetId([
+            'tenant_id' => session('tenant_id'),
+            'client_id' => $data['client_id'],
+            'invoice_number' => $invoiceNumber,
+            'issue_date' => $data['issue_date'],
+            'due_date' => $data['due_date'],
+            'subtotal' => $subtotal,
+            'tax_total' => $taxTotal,
+            'total' => $total,
+            'amount_paid' => 0,
+            'status' => 'unpaid',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
-        return view('app.invoices.index', compact('invoices'));
+        // Create invoice items
+        foreach ($items as $item) {
+            DB::table('invoice_items')->insert([
+                'invoice_id' => $invoiceId,
+                'description' => $item['description'],
+                'quantity' => $item['quantity'],
+                'unit_price' => $item['unit_price'],
+                'total' => $item['total'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        return redirect()->route('app.invoices.index')->with('success', 'Invoice created successfully.');
     }
 
     public function show(int $id): View

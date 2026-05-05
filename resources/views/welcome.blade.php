@@ -3,48 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RenewPilot - SaaS Subscription Management</title>
+    <title>RenewPilot - Modern SaaS Subscription Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans antialiased">
+<body class="bg-white text-gray-900 antialiased">
+    <!-- Navbar -->
+    <nav class="fixed top-0 left-0 right-0 z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between glass rounded-3xl px-8 py-4 shadow-sm border border-gray-100">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
+                    <i class="fas fa-bolt text-sm"></i>
+                </div>
+                <span class="text-xl font-black tracking-tight">RenewPilot</span>
+            </div>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#features" class="text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors">Features</a>
+                <a href="#pricing" class="text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors">Pricing</a>
+                <div class="h-4 w-px bg-gray-200"></div>
+                <a href="{{ route('login') }}" class="text-sm font-bold text-gray-900 hover:text-indigo-600 transition-colors">Login</a>
+                <a href="{{ route('register') }}" class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">Start Free</a>
+            </div>
+        </div>
+    </nav>
+
     <!-- Hero Section -->
-    <header class="bg-indigo-700 text-white py-20 px-4">
-        <div class="max-w-7xl mx-auto flex flex-col items-center text-center">
-            <h1 class="text-5xl font-extrabold mb-6">Automate Your SaaS Renewals</h1>
-            <p class="text-xl text-indigo-100 mb-10 max-w-2xl">
-                The ultimate platform for agencies to manage client subscriptions, automate invoicing, and track recurring revenue.
-            </p>
-            <div class="space-x-4">
-                <a href="{{ route('register') }}" class="bg-white text-indigo-700 px-8 py-3 rounded-lg font-bold hover:bg-indigo-50 transition">Get Started Free</a>
-                <a href="{{ route('login') }}" class="bg-indigo-600 text-white border border-indigo-500 px-8 py-3 rounded-lg font-bold hover:bg-indigo-500 transition">Login</a>
+    <header class="pt-40 pb-20 px-6 relative overflow-hidden">
+        <div class="absolute top-0 -left-4 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        <div class="absolute top-0 -right-4 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="max-w-3xl mx-auto text-center">
+                <div class="inline-flex items-center px-4 py-1.5 rounded-full bg-indigo-50 text-indigo-600 text-xs font-black uppercase tracking-widest mb-8 border border-indigo-100">
+                    <span class="mr-2 flex h-2 w-2 relative">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                    </span>
+                    The Future of Agency Billing
+                </div>
+                <h1 class="text-6xl md:text-7xl font-black tracking-tight text-gray-900 mb-8">
+                    Automate Your <span class="text-indigo-600">SaaS Renewals</span> Like a Pro.
+                </h1>
+                <p class="text-xl text-gray-500 font-medium leading-relaxed mb-12">
+                    The all-in-one command center for agencies to manage subscriptions, automate recurring invoices, and scale MRR without the headache.
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="{{ route('register') }}" class="w-full sm:w-auto px-10 py-5 bg-indigo-600 text-white rounded-[2rem] text-lg font-black shadow-2xl shadow-indigo-200 hover:bg-indigo-700 transition-all transform hover:-translate-y-1">
+                        Start Growing Free
+                    </a>
+                    <a href="#features" class="w-full sm:w-auto px-10 py-5 bg-white text-gray-900 rounded-[2rem] text-lg font-black border-2 border-gray-100 hover:border-indigo-100 transition-all">
+                        Explore Features
+                    </a>
+                </div>
+                
+                <div class="mt-20 flex flex-wrap justify-center items-center gap-8 opacity-50 grayscale">
+                    <span class="text-xl font-black tracking-tighter">STRIPE</span>
+                    <span class="text-xl font-black tracking-tighter">PAYPAL</span>
+                    <span class="text-xl font-black tracking-tighter">WISE</span>
+                    <span class="text-xl font-black tracking-tighter">PADDLE</span>
+                </div>
             </div>
         </div>
     </header>
 
     <!-- Pricing Section -->
-    <section class="py-20 px-4" id="pricing">
+    <section class="py-32 px-6 bg-[#fafafa]" id="pricing">
         <div class="max-w-7xl mx-auto">
-            <h2 class="text-3xl font-bold text-center mb-12">Flexible Pricing for Every Agency</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div class="text-center mb-20">
+                <h2 class="text-4xl font-black tracking-tight text-gray-900 mb-4">Simple, Transparent Pricing</h2>
+                <p class="text-gray-500 font-medium">Choose the perfect plan for your agency's scale.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
                 @foreach($plans as $plan)
-                <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 flex flex-col">
-                    <h3 class="text-2xl font-bold mb-2">{{ $plan->name }}</h3>
-                    <p class="text-gray-500 mb-6">{{ $plan->description }}</p>
-                    <div class="text-4xl font-extrabold mb-6">${{ number_format($plan->price, 2) }}<span class="text-lg text-gray-400 font-normal">/{{ $plan->billing_cycle }}</span></div>
+                <div class="group bg-white p-12 rounded-[3rem] shadow-xl shadow-gray-200/50 border border-white hover:border-indigo-100 transition-all duration-500 flex flex-col relative overflow-hidden">
+                    @if($loop->last)
+                        <div class="absolute top-8 right-[-35px] bg-indigo-600 text-white px-10 py-1 rotate-45 text-[10px] font-black uppercase tracking-widest">Popular</div>
+                    @endif
                     
-                    <ul class="mb-8 flex-grow space-y-3">
+                    <h3 class="text-2xl font-black mb-2 text-gray-900">{{ $plan->name }}</h3>
+                    <p class="text-gray-500 text-sm font-medium mb-8 leading-relaxed">{{ $plan->description }}</p>
+                    
+                    <div class="flex items-baseline gap-1 mb-10">
+                        <span class="text-5xl font-black tracking-tighter text-gray-900">${{ number_format($plan->price, 0) }}</span>
+                        <span class="text-gray-400 font-bold uppercase tracking-widest text-xs">/ {{ $plan->billing_cycle->value }}</span>
+                    </div>
+                    
+                    <ul class="mb-12 space-y-4 flex-grow">
                         @if($plan->features)
                             @foreach($plan->features as $feature)
-                            <li class="flex items-center text-gray-600">
-                                <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <li class="flex items-center text-gray-600 font-medium">
+                                <div class="w-6 h-6 bg-emerald-50 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-check text-[10px] text-emerald-500"></i>
+                                </div>
                                 {{ $feature }}
                             </li>
                             @endforeach
                         @endif
                     </ul>
 
-                    <a href="{{ route('register', ['plan' => $plan->slug]) }}" class="block text-center bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition">
-                        Select Plan
+                    <a href="{{ route('register', ['plan' => $plan->slug]) }}" 
+                       class="block text-center py-5 rounded-[2rem] font-black text-sm uppercase tracking-widest transition-all
+                       {{ $loop->last ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100 hover:bg-indigo-700' : 'bg-gray-50 text-gray-900 hover:bg-gray-100' }}">
+                        Get Started
                     </a>
                 </div>
                 @endforeach
@@ -53,10 +119,22 @@
     </section>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-400 py-12 px-4">
-        <div class="max-w-7xl mx-auto text-center">
-            <p>&copy; {{ date('Y') }} RenewPilot. All rights reserved.</p>
+    <footer class="py-20 px-6 bg-white border-t border-gray-100">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
+                    <i class="fas fa-bolt text-sm"></i>
+                </div>
+                <span class="text-xl font-black tracking-tight text-gray-900">RenewPilot</span>
+            </div>
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">&copy; {{ date('Y') }} RenewPilot Inc. Built for winners.</p>
+            <div class="flex space-x-6">
+                <a href="#" class="text-gray-400 hover:text-indigo-600 transition-colors"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="text-gray-400 hover:text-indigo-600 transition-colors"><i class="fab fa-linkedin"></i></a>
+                <a href="#" class="text-gray-400 hover:text-indigo-600 transition-colors"><i class="fab fa-github"></i></a>
+            </div>
         </div>
     </footer>
 </body>
 </html>
+

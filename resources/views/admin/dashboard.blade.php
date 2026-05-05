@@ -1,98 +1,137 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Super Admin Dashboard') }}
-        </h2>
+        Super Admin Panel
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
-            <!-- Global KPI Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- Total Tenants -->
-                <div class="bg-white overflow-hidden shadow-xl rounded-2xl p-6 border-l-8 border-blue-500">
-                    <div class="text-sm text-gray-500 font-bold uppercase tracking-wider">Total Tenants</div>
-                    <div class="mt-2 text-4xl font-black text-gray-900">{{ $totalTenants }}</div>
+    <div class="space-y-8">
+        <!-- Global SaaS Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Total Tenants -->
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 flex items-center justify-between overflow-hidden relative group">
+                <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full transition-transform group-hover:scale-110"></div>
+                <div class="relative">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Agencies</p>
+                    <p class="text-4xl font-black text-gray-900">{{ $totalTenants }}</p>
+                    <p class="text-[10px] text-blue-600 font-bold mt-2 uppercase tracking-tighter">Registered in system</p>
                 </div>
-
-                <!-- Active Tenants -->
-                <div class="bg-white overflow-hidden shadow-xl rounded-2xl p-6 border-l-8 border-green-500">
-                    <div class="text-sm text-gray-500 font-bold uppercase tracking-wider">Active Tenants</div>
-                    <div class="mt-2 text-4xl font-black text-gray-900">{{ $activeTenants }}</div>
-                </div>
-
-                <!-- SaaS Revenue -->
-                <div class="bg-white overflow-hidden shadow-xl rounded-2xl p-6 border-l-8 border-indigo-600">
-                    <div class="text-sm text-gray-500 font-bold uppercase tracking-wider">Total SaaS Revenue</div>
-                    <div class="mt-2 text-4xl font-black text-indigo-600">${{ number_format($totalSaaSRevenue, 2) }}</div>
+                <div class="relative w-14 h-14 bg-blue-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-100">
+                    <i class="fas fa-building text-2xl"></i>
                 </div>
             </div>
 
-            <!-- Recent Tenants Table -->
-            <div class="bg-white shadow-xl rounded-2xl overflow-hidden">
-                <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                    <h3 class="text-lg font-bold text-gray-900">Recently Joined Tenants</h3>
-                    <a href="{{ route('admin.tenants') }}" class="text-indigo-600 hover:text-indigo-800 font-bold text-sm">View All Tenants →</a>
+            <!-- Active Tenants -->
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 flex items-center justify-between overflow-hidden relative group">
+                <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 rounded-full transition-transform group-hover:scale-110"></div>
+                <div class="relative">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Active Accounts</p>
+                    <p class="text-4xl font-black text-gray-900">{{ $activeTenants }}</p>
+                    <p class="text-[10px] text-emerald-600 font-bold mt-2 uppercase tracking-tighter">{{ round(($activeTenants / max($totalTenants, 1)) * 100) }}% retention rate</p>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Agency Name</th>
-                                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Email</th>
-                                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Plan</th>
-                                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Joined</th>
-                                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            @forelse($recentTenants as $tenant)
-                            <tr class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ $tenant->name }}</td>
-                                <td class="px-6 py-4 text-gray-600">{{ $tenant->email }}</td>
-                                <td class="px-6 py-4">
-                                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700">
-                                        {{ $tenant->plan_name }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="px-3 py-1 rounded-full text-xs font-bold 
-                                        @if($tenant->status === 'active') bg-green-100 text-green-700 
-                                        @elseif($tenant->status === 'trial') bg-blue-100 text-blue-700
-                                        @else bg-red-100 text-red-700 @endif">
-                                        {{ ucfirst($tenant->status) }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-gray-500 text-sm">
-                                    {{ \Carbon\Carbon::parse($tenant->created_at)->format('M d, Y') }}
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex space-x-2">
-                                        @if($tenant->status !== 'suspended')
-                                        <form action="{{ route('admin.tenants.suspend', $tenant->id) }}" method="POST">
-                                            @csrf
-                                            <button class="text-red-600 hover:text-red-900 font-bold text-xs">Suspend</button>
-                                        </form>
-                                        @else
-                                        <form action="{{ route('admin.tenants.activate', $tenant->id) }}" method="POST">
-                                            @csrf
-                                            <button class="text-green-600 hover:text-green-900 font-bold text-xs">Activate</button>
-                                        </form>
-                                        @endif
+                <div class="relative w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-100">
+                    <i class="fas fa-check-double text-2xl"></i>
+                </div>
+            </div>
+
+            <!-- SaaS Revenue -->
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 flex items-center justify-between overflow-hidden relative group">
+                <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-50 rounded-full transition-transform group-hover:scale-110"></div>
+                <div class="relative">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">SaaS Revenue (MRR)</p>
+                    <p class="text-4xl font-black text-indigo-600">${{ number_format($totalSaaSRevenue, 2) }}</p>
+                    <p class="text-[10px] text-indigo-400 font-bold mt-2 uppercase tracking-tighter">Projected monthly income</p>
+                </div>
+                <div class="relative w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
+                    <i class="fas fa-wallet text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Table -->
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-8 py-6 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                    <h3 class="font-black text-gray-900 uppercase tracking-wider text-sm">Recently Joined Agencies</h3>
+                    <p class="text-xs text-gray-400 mt-1">Latest tenant registrations across the platform</p>
+                </div>
+                <a href="{{ route('admin.tenants') }}" class="px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors">
+                    View All Tenants
+                </a>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-gray-50/30">
+                            <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Agency / Owner</th>
+                            <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">SaaS Plan</th>
+                            <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
+                            <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Joined On</th>
+                            <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Operations</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        @forelse($recentTenants as $tenant)
+                        <tr class="hover:bg-gray-50/50 transition-colors group">
+                            <td class="px-8 py-5">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-bold">
+                                        {{ substr($tenant->name, 0, 1) }}
                                     </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="6" class="px-6 py-10 text-center text-gray-500">No tenants found.</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{{ $tenant->name }}</p>
+                                        <p class="text-[10px] text-gray-400 font-medium">{{ $tenant->email }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-8 py-5">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                    {{ $tenant->plan_name }}
+                                </span>
+                            </td>
+                            <td class="px-8 py-5 text-center">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter 
+                                    @if($tenant->status === 'active') bg-emerald-100 text-emerald-700 
+                                    @elseif($tenant->status === 'trial') bg-blue-100 text-blue-700
+                                    @else bg-red-100 text-red-700 @endif">
+                                    <span class="w-1 h-1 rounded-full mr-1.5 
+                                        @if($tenant->status === 'active') bg-emerald-500 
+                                        @elseif($tenant->status === 'trial') bg-blue-500
+                                        @else bg-red-500 @endif"></span>
+                                    {{ $tenant->status }}
+                                </span>
+                            </td>
+                            <td class="px-8 py-5 text-sm font-medium text-gray-500">
+                                {{ \Carbon\Carbon::parse($tenant->created_at)->format('M d, Y') }}
+                            </td>
+                            <td class="px-8 py-5 text-right">
+                                <div class="flex items-center justify-end space-x-2">
+                                    @if($tenant->status !== 'suspended')
+                                    <form action="{{ route('admin.tenants.suspend', $tenant->id) }}" method="POST">
+                                        @csrf
+                                        <button class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all">
+                                            Suspend
+                                        </button>
+                                    </form>
+                                    @else
+                                    <form action="{{ route('admin.tenants.activate', $tenant->id) }}" method="POST">
+                                        @csrf
+                                        <button class="px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all">
+                                            Activate
+                                        </button>
+                                    </form>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="px-8 py-12 text-center text-gray-400">No activity recorded yet.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </x-app-layout>
+

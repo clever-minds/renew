@@ -18,35 +18,35 @@ class PaymentController extends Controller
     {
     }
 
-    public function index(Request $request): View
+    public function index(Request $request)
     {
-        // High-performance Query Builder for shared hosting
-        $query = DB::table('payments')
-            ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
-            ->join('clients', 'invoices.client_id', '=', 'clients.id')
-            ->where('payments.tenant_id', session('tenant_id'))
-            ->select(
-                'payments.*',
-                'invoices.invoice_number',
-                'clients.name as client_name'
-            );
+        if ($request->ajax()) {
+            $query = DB::table('payments')
+                ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
+                ->join('clients', 'invoices.client_id', '=', 'clients.id')
+                ->where('payments.tenant_id', session('tenant_id'))
+                ->select(
+                    'payments.*',
+                    'invoices.invoice_number',
+                    'clients.name as client_name'
+                );
 
-        if ($request->filled('search')) {
-            $search = $request->get('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('payments.transaction_reference', 'like', "%{$search}%")
-                  ->orWhere('invoices.invoice_number', 'like', "%{$search}%")
-                  ->orWhere('clients.name', 'like', "%{$search}%");
-            });
+            return \Yajra\DataTables\Facades\DataTables::of($query)
+                ->addIndexColumn()
+                ->editColumn('amount', function($row){
+                    return '$' . number_format((float)$row->amount, 2);
+                })
+                ->editColumn('payment_date', function($row){
+                    return \Carbon\Carbon::parse($row->payment_date)->format('M d, Y');
+                })
+                ->editColumn('payment_method', function($row){
+                    return '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 uppercase">'.$row->payment_method.'</span>';
+                })
+                ->rawColumns(['payment_method'])
+                ->make(true);
         }
 
-        if ($request->filled('method')) {
-            $query->where('payments.payment_method', $request->get('method'));
-        }
-
-        $payments = $query->orderBy('payments.payment_date', 'desc')->paginate(15)->withQueryString();
-
-        return view('app.payments.index', compact('payments'));
+        return view('app.payments.index');
     }
 
     public function store(StorePaymentRequest $request): RedirectResponse
@@ -62,7 +62,7 @@ class PaymentController extends Controller
                 $data['transaction_reference'] ?? null
             );
 
-            return back()->with('success', 'Payment logged successfully.');
+            return redirect()->route('app.payments.index')->with('success', 'Payment logged successfully.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }

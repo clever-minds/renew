@@ -14,19 +14,37 @@ use Illuminate\Http\Request;
 
 class ServiceController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request)
     {
-        $query = Service::query();
-
-        if ($request->filled('search')) {
-            $search = $request->get('search');
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+        if ($request->ajax()) {
+            $query = Service::query();
+            return \Yajra\DataTables\Facades\DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('action', function($row){
+                    $editUrl = route('app.services.edit', $row->id);
+                    return '<a href="'.$editUrl.'" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"><i class="fas fa-edit"></i></a>';
+                })
+                ->editColumn('price', function($row){
+                    return '$' . number_format((float)$row->price, 2);
+                })
+                ->editColumn('billing_cycle', function($row){
+                    return ucfirst($row->billing_cycle->value);
+                })
+                ->rawColumns(['action'])
+                ->make(true);
         }
 
-        $services = $query->latest()->paginate(15)->withQueryString();
+        return view('app.services.index');
+    }
 
-        return view('app.services.index', compact('services'));
+    public function create(): View
+    {
+        return view('app.services.create');
+    }
+
+    public function show(Service $service): View
+    {
+        return view('app.services.show', compact('service'));
     }
 
     public function store(StoreServiceRequest $request): RedirectResponse
@@ -40,7 +58,7 @@ class ServiceController extends Controller
     {
         $service->update($request->validated());
 
-        return back()->with('success', 'Service updated successfully.');
+        return redirect()->route('app.services.index')->with('success', 'Service updated successfully.');
     }
 
     public function destroy(Service $service): RedirectResponse
@@ -55,5 +73,10 @@ class ServiceController extends Controller
 
         $service->forceDelete();
         return back()->with('success', 'Service deleted successfully.');
+    }
+
+    public function edit(Service $service): View
+    {
+        return view('app.services.edit', compact('service'));
     }
 }
