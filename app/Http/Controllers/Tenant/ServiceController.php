@@ -25,7 +25,7 @@ class ServiceController extends Controller
                     return '<a href="'.$editUrl.'" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"><i class="fas fa-edit"></i></a>';
                 })
                 ->editColumn('price', function($row){
-                    return '$' . number_format((float)$row->price, 2);
+                    return '₹' . number_format((float)$row->price, 2);
                 })
                 ->editColumn('billing_cycle', function($row){
                     return ucfirst($row->billing_cycle->value);

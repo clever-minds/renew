@@ -131,7 +131,7 @@
 
             <!-- Sidebar -->
             <div :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
-                 class="fixed inset-y-0 left-0 w-64 bg-indigo-700 text-white transform transition-transform duration-300 ease-in-out z-50 lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:flex-none">
+                 class="fixed inset-y-0 left-0 w-64 bg-indigo-700 text-white transform transition-transform duration-300 ease-in-out z-50 lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:flex-none print:hidden">
                 
                 <div class="flex flex-col h-full">
                     <!-- Logo Area -->
@@ -235,7 +235,7 @@
             <!-- Content Area -->
             <div class="flex-1 flex flex-col min-w-0">
                 <!-- Top Header -->
-                <header class="bg-white border-b border-gray-200 flex items-center justify-between h-16 px-4 lg:px-8">
+                <header class="bg-white border-b border-gray-200 flex items-center justify-between h-16 px-4 lg:px-8 print:hidden">
                     <div class="flex items-center">
                         <button @click="sidebarOpen = true" class="lg:hidden p-2 text-gray-500 hover:text-gray-600">
                             <i class="fas fa-bars text-xl"></i>
@@ -245,13 +245,39 @@
                         </h1>
                     </div>
                     
-                    <div class="flex items-center space-x-4">
-                        <div class="hidden sm:block">
-                            <p class="text-sm font-medium text-gray-700">{{ auth()->user()->name }}</p>
-                            <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
+                    <div class="flex items-center space-x-4 relative" x-data="{ userMenuOpen: false }">
+                        <div class="hidden sm:block text-right">
+                            <p class="text-sm font-bold text-gray-800">{{ auth()->user()->name }}</p>
+                            <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">{{ auth()->user()->is_super_admin ? 'Super Admin' : 'Agency Owner' }}</p>
                         </div>
-                        <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border-2 border-indigo-500">
+                        <button @click="userMenuOpen = !userMenuOpen" @click.away="userMenuOpen = false" class="focus:outline-none w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border-2 border-indigo-500 hover:bg-indigo-200 transition-colors">
                             {{ substr(auth()->user()->name, 0, 1) }}
+                        </button>
+                        
+                        <!-- User Dropdown Menu -->
+                        <div x-show="userMenuOpen" 
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="absolute right-0 top-12 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50" x-cloak>
+                             
+                            <div class="px-4 py-2 border-b border-gray-50 sm:hidden">
+                                <p class="text-sm font-bold text-gray-800 truncate">{{ auth()->user()->name }}</p>
+                                <p class="text-[10px] text-gray-500 truncate">{{ auth()->user()->email }}</p>
+                            </div>
+
+                            <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 transition-colors font-medium">
+                                <i class="fas fa-user w-5 text-gray-400 text-center mr-1"></i> View Profile
+                            </a>
+                            <form method="POST" action="{{ route('logout') }}" class="block w-full m-0">
+                                @csrf
+                                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium">
+                                    <i class="fas fa-sign-out-alt w-5 text-red-400 text-center mr-1"></i> Logout
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </header>

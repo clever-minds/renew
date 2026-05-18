@@ -3,7 +3,25 @@
         System Settings
     </x-slot>
 
-    <div class="max-w-4xl space-y-12">
+    <div class="max-w-4xl space-y-8">
+        @if(session('success'))
+            <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3 text-emerald-600 text-sm font-bold">
+                <i class="fas fa-check-circle"></i>
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div class="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm font-bold space-y-1">
+                @foreach($errors->all() as $error)
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-exclamation-circle text-[10px]"></i>
+                        {{ $error }}
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
         <!-- Company Settings -->
         <section class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center space-x-3">
@@ -28,20 +46,10 @@
                         </div>
                         <div class="col-span-2 md:col-span-1">
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Default Currency</label>
-                            <select name="currency" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                <option value="USD" @selected(($company['currency'] ?? '') === 'USD')>USD - US Dollar</option>
-                                <option value="EUR" @selected(($company['currency'] ?? '') === 'EUR')>EUR - Euro</option>
-                                <option value="INR" @selected(($company['currency'] ?? '') === 'INR')>INR - Indian Rupee</option>
-                                <option value="GBP" @selected(($company['currency'] ?? '') === 'GBP')>GBP - British Pound</option>
-                            </select>
-                        </div>
-                        <div class="col-span-2 md:col-span-1">
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Timezone</label>
-                            <select name="timezone" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                @foreach(timezone_identifiers_list() as $tz)
-                                    <option value="{{ $tz }}" @selected(($company['timezone'] ?? 'UTC') === $tz)>{{ $tz }}</option>
-                                @endforeach
-                            </select>
+                            <div class="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-2.5 text-sm font-bold text-gray-900 flex items-center">
+                                <span class="mr-2 text-indigo-600">₹</span> INR - Indian Rupee
+                                <input type="hidden" name="currency" value="INR">
+                            </div>
                         </div>
                     </div>
                     <div class="pt-4 flex justify-end">
@@ -95,6 +103,11 @@
                         <div class="col-span-2 md:col-span-1">
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">From Address</label>
                             <input type="email" name="from_address" value="{{ $smtp['from_address'] ?? '' }}" placeholder="noreply@agency.com"
+                                   class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        </div>
+                        <div class="col-span-2 md:col-span-1">
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">From Name</label>
+                            <input type="text" name="from_name" value="{{ $smtp['from_name'] ?? '' }}" placeholder="Agency Name"
                                    class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                         </div>
                     </div>

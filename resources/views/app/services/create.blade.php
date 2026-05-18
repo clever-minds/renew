@@ -30,9 +30,9 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label for="price" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Pricing (USD)</label>
+                            <label for="price" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Pricing (INR)</label>
                             <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
                                 <input type="number" name="price" id="price" step="0.01" min="0" required
                                        class="w-full pl-8 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="0.00">
                             </div>

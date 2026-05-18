@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
+use App\Notifications\InvoiceGeneratedNotification;
 // use App\Models\Invoice; // Note: Model generated in next step
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -31,7 +34,7 @@ class InvoiceController extends Controller
                     return '<a href="'.$viewUrl.'" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"><i class="fas fa-eye"></i></a>';
                 })
                 ->editColumn('total', function($row){
-                    return '$' . number_format((float)$row->total, 2);
+                    return '₹' . number_format((float)$row->total, 2);
                 })
                 ->editColumn('status', function($row){
                     $class = $row->status === 'paid' ? 'bg-emerald-100 text-emerald-800' : ($row->status === 'unpaid' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800');
@@ -58,7 +61,7 @@ class InvoiceController extends Controller
         $data = $request->validated();
 
         // Generate invoice number
-        $invoiceNumber = 'INV-' . date('Y') . '-' . str_pad((DB::table('invoices')->where('tenant_id', session('tenant_id'))->count() + 1), 4, '0', STR_PAD_LEFT);
+        $invoiceNumber = 'INV-' . date('Y') . '-' . str_pad((string)(DB::table('invoices')->where('tenant_id', session('tenant_id'))->count() + 1), 4, '0', STR_PAD_LEFT);
 
         // Calculate totals
         $subtotal = 0;
@@ -79,8 +82,8 @@ class InvoiceController extends Controller
         $taxTotal = $subtotal * ($taxRate / 100);
         $total = $subtotal + $taxTotal;
 
-        // Create invoice
-        $invoiceId = DB::table('invoices')->insertGetId([
+        // Create invoice using Eloquent for notification support
+        $invoice = Invoice::create([
             'tenant_id' => session('tenant_id'),
             'client_id' => $data['client_id'],
             'invoice_number' => $invoiceNumber,
@@ -90,25 +93,30 @@ class InvoiceController extends Controller
             'tax_total' => $taxTotal,
             'total' => $total,
             'amount_paid' => 0,
-            'status' => 'unpaid',
-            'created_at' => now(),
-            'updated_at' => now(),
+            'status' => \App\Enums\InvoiceStatus::UNPAID,
         ]);
 
         // Create invoice items
         foreach ($items as $item) {
-            DB::table('invoice_items')->insert([
-                'invoice_id' => $invoiceId,
+            $invoice->items()->create([
                 'description' => $item['description'],
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'],
                 'total' => $item['total'],
-                'created_at' => now(),
-                'updated_at' => now(),
             ]);
         }
 
-        return redirect()->route('app.invoices.index')->with('success', 'Invoice created successfully.');
+        // Notify client if they have an email
+        if ($invoice->client && $invoice->client->email) {
+            try {
+                $invoice->client->notify(new InvoiceGeneratedNotification($invoice));
+            } catch (\Exception $e) {
+                // Log the error but don't stop the process
+                \Illuminate\Support\Facades\Log::error('Invoice Mail Error: ' . $e->getMessage());
+            }
+        }
+
+        return redirect()->route('app.invoices.index')->with('success', 'Invoice created and email sent successfully.');
     }
 
     public function show(int $id): View
@@ -122,5 +130,17 @@ class InvoiceController extends Controller
         $payments = DB::table('payments')->where('invoice_id', $invoice->id)->get();
 
         return view('app.invoices.show', compact('invoice', 'client', 'items', 'payments'));
+    }
+
+    public function downloadPdf(int $id)
+    {
+        $invoice = DB::table('invoices')->where('id', $id)->where('tenant_id', session('tenant_id'))->first();
+        abort_if(!$invoice, 404);
+
+        $client = DB::table('clients')->where('id', $invoice->client_id)->first();
+        $items = DB::table('invoice_items')->where('invoice_id', $invoice->id)->get();
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('app.invoices.pdf', compact('invoice', 'client', 'items'));
+        return $pdf->download('invoice-' . $invoice->invoice_number . '.pdf');
     }
 }

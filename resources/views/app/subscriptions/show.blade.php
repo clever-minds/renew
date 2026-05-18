@@ -55,7 +55,7 @@
             <div class="p-8 grid grid-cols-1 md:grid-cols-4 gap-8 border-b border-gray-50">
                 <div class="space-y-1">
                     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Recurring Price</p>
-                    <p class="text-2xl font-black text-gray-900">${{ number_format($subscription->price, 2) }}</p>
+                    <p class="text-2xl font-black text-gray-900">₹{{ number_format($subscription->price, 2) }}</p>
                     <p class="text-[10px] text-gray-500 font-bold uppercase">{{ $subscription->service->billing_cycle->value }} cycle</p>
                 </div>
                 <div class="space-y-1">
@@ -127,7 +127,7 @@
                 <select name="service_id" required class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                     @foreach($services as $service)
                         <option value="{{ $service->id }}" {{ $subscription->service_id === $service->id ? 'selected' : '' }}>
-                            {{ $service->name }} (${{ number_format($service->price, 2) }})
+                            {{ $service->name }} (₹{{ number_format($service->price, 2) }})
                         </option>
                     @endforeach
                 </select>
@@ -137,7 +137,7 @@
                 <div>
                     <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Custom Price</label>
                     <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
                         <input type="number" name="price" value="{{ $subscription->price }}" step="0.01" min="0" required class="w-full pl-8 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                     </div>
                 </div>

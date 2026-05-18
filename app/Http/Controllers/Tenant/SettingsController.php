@@ -9,6 +9,7 @@ use App\Services\Settings\SettingsService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use App\Models\Tenant;
 
 class SettingsController extends Controller
 {
@@ -19,10 +20,21 @@ class SettingsController extends Controller
     public function index(): View
     {
         $tenantId = session('tenant_id');
+        $tenant = Tenant::findOrFail($tenantId);
         
-        $company = $this->settingsService->get($tenantId, 'company_settings', []);
-        $smtp = $this->settingsService->get($tenantId, 'smtp_settings', []);
-        $whatsapp = $this->settingsService->get($tenantId, 'whatsapp_settings', []); // Would need decryption if stored encrypted
+        $company = $this->settingsService->get((int)$tenantId, 'company_settings', []);
+        
+        // Fallback to Tenant model values if settings haven't been saved yet
+        if (empty($company)) {
+            $company = [
+                'company_name' => $tenant->name,
+                'support_email' => $tenant->email,
+                'currency' => 'INR',
+            ];
+        }
+
+        $smtp = $this->settingsService->get((int)$tenantId, 'smtp_settings', []);
+        $whatsapp = $this->settingsService->get((int)$tenantId, 'whatsapp_settings', []);
 
         return view('app.settings.index', compact('company', 'smtp', 'whatsapp'));
     }
@@ -32,11 +44,17 @@ class SettingsController extends Controller
         $validated = $request->validate([
             'company_name' => ['required', 'string', 'max:255'],
             'support_email' => ['required', 'email', 'max:255'],
-            'timezone' => ['required', 'timezone'],
             'currency' => ['required', 'string', 'size:3'],
         ]);
 
-        $this->settingsService->set(session('tenant_id'), 'company_settings', $validated);
+        $tenantId = session('tenant_id');
+        $this->settingsService->set((int)$tenantId, 'company_settings', $validated);
+
+        // Sync with Tenant model
+        Tenant::where('id', $tenantId)->update([
+            'name' => $validated['company_name'],
+            'email' => $validated['support_email']
+        ]);
 
         return back()->with('success', 'Company settings updated.');
     }

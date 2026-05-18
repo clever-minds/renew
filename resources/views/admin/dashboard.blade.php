@@ -37,7 +37,7 @@
                 <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-50 rounded-full transition-transform group-hover:scale-110"></div>
                 <div class="relative">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">SaaS Revenue (MRR)</p>
-                    <p class="text-4xl font-black text-indigo-600">${{ number_format($totalSaaSRevenue, 2) }}</p>
+                    <p class="text-4xl font-black text-indigo-600">₹{{ number_format($totalSaaSRevenue, 2) }}</p>
                     <p class="text-[10px] text-indigo-400 font-bold mt-2 uppercase tracking-tighter">Projected monthly income</p>
                 </div>
                 <div class="relative w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">

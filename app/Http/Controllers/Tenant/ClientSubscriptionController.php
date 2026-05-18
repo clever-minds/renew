@@ -35,7 +35,7 @@ class ClientSubscriptionController extends Controller
                     return '<a href="'.$viewUrl.'" class="inline-flex items-center px-3 py-1 bg-white border border-gray-200 text-indigo-600 hover:bg-indigo-50 rounded-lg text-xs font-bold transition-colors">Manage</a>';
                 })
                 ->editColumn('price', function($row){
-                    return '$' . number_format((float)$row->price, 2) . ' /' . $row->service->billing_cycle->value;
+                    return '₹' . number_format((float)$row->price, 2) . ' /' . $row->service->billing_cycle->value;
                 })
                 ->editColumn('status', function($row){
                     $class = $row->status->value === 'active' ? 'bg-emerald-100 text-emerald-800' : ($row->status->value === 'overdue' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800');
@@ -73,7 +73,7 @@ class ClientSubscriptionController extends Controller
         return view('app.subscriptions.show', compact('subscription', 'clients', 'services'));
     }
 
-    public function store(StoreSubscriptionRequest $request): RedirectResponse
+    public function store(StoreSubscriptionRequest $request, \App\Services\Billing\InvoiceService $invoiceService): RedirectResponse
     {
         $data = $request->validated();
         $service = Service::findOrFail($data['service_id']);
@@ -89,15 +89,24 @@ class ClientSubscriptionController extends Controller
             BillingCycle::ONE_TIME => null,
         };
 
-        ClientSubscription::create([
+        $subscription = ClientSubscription::create([
             'client_id' => $data['client_id'],
             'service_id' => $service->id,
             'price' => $data['price'], // Allows override
             'start_date' => $startDate->toDateString(),
             'next_due_date' => $nextDueDate?->toDateString(),
             'status' => SubscriptionStatus::ACTIVE->value,
-            'auto_invoice' => $data['auto_invoice'] ?? true,
+            'auto_invoice' => $request->boolean('auto_invoice'),
         ]);
+
+        // Immediately generate the first invoice if auto-invoicing is enabled
+        if ($subscription->auto_invoice) {
+            try {
+                $invoiceService->generateFromSubscription($subscription);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Auto-Invoice Generation on Subscription Creation Failed: ' . $e->getMessage());
+            }
+        }
 
         return redirect()->route('app.subscriptions.index')->with('success', 'Subscription assigned successfully.');
     }
@@ -127,7 +136,7 @@ class ClientSubscriptionController extends Controller
             'price' => $data['price'],
             'start_date' => $startDate->toDateString(),
             'next_due_date' => $nextDueDate?->toDateString(),
-            'auto_invoice' => $data['auto_invoice'] ?? true,
+            'auto_invoice' => $request->boolean('auto_invoice'),
         ]);
 
         return redirect()->route('app.subscriptions.index')->with('success', 'Subscription updated successfully.');

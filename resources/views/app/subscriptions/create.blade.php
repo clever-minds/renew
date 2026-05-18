@@ -36,7 +36,7 @@
                             <option value="">Select a service...</option>
                             @foreach($services as $service)
                                 <option value="{{ $service->id }}" data-price="{{ $service->price }}" data-cycle="{{ $service->billing_cycle->value }}">
-                                    {{ $service->name }} - ${{ number_format($service->price, 2) }}/{{ ucfirst($service->billing_cycle->value) }}
+                                    {{ $service->name }} - ₹{{ number_format($service->price, 2) }}/{{ ucfirst($service->billing_cycle->value) }}
                                 </option>
                             @endforeach
                         </select>
@@ -46,7 +46,7 @@
                         <div>
                             <label for="price" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Subscription Price</label>
                             <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
                                 <input type="number" name="price" id="price" step="0.01" min="0"
                                        class="w-full pl-8 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="0.00">
                             </div>

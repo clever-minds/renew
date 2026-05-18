@@ -66,6 +66,6 @@ class RegisteredUserController extends Controller
         // Set session tenant_id
         session(['tenant_id' => $user->tenant_id]);
 
-        return redirect()->route('dashboard');
+        return redirect()->route('app.dashboard');
     }
 }

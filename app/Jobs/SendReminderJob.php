@@ -28,13 +28,20 @@ class SendReminderJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            // Here we would use NotificationService to parse templates and send Mail/WhatsApp.
-            // For example:
-            // $subscription = ClientSubscription::with('client')->find($this->clientSubscriptionId);
-            // $rule = DB::table('reminders')->find($this->reminderRuleId);
-            // Notification::send($subscription->client, new SubscriptionReminder($subscription, $rule));
+            $subscription = \App\Models\ClientSubscription::with(['client', 'service'])->find($this->clientSubscriptionId);
+            if (!$subscription || !$subscription->client) {
+                throw new \Exception("Subscription or Client not found.");
+            }
 
-            // On success, mark the log as sent to satisfy idempotency
+            $rule = \Illuminate\Support\Facades\DB::table('reminders')->where('id', $this->reminderRuleId)->first();
+            if (!$rule) {
+                throw new \Exception("Reminder rule not found.");
+            }
+
+            // Send notification
+            $subscription->client->notify(new \App\Notifications\UpcomingRenewalNotification($subscription, $rule));
+
+            // On success, mark the log as sent
             DB::table('reminder_logs')->where('id', $this->reminderLogId)->update([
                 'status' => 'sent',
                 'sent_at' => Carbon::now(),
@@ -42,8 +49,6 @@ class SendReminderJob implements ShouldQueue
             ]);
 
         } catch (\Exception $e) {
-            // On failure, mark the log as failed so it can be manually retried if needed,
-            // or the job's built-in retry mechanism will attempt it again.
             if ($this->attempts() >= $this->tries) {
                 DB::table('reminder_logs')->where('id', $this->reminderLogId)->update([
                     'status' => 'failed',
@@ -52,7 +57,7 @@ class SendReminderJob implements ShouldQueue
                 ]);
             }
             
-            throw $e; // Re-throw to let the queue worker know it failed
+            throw $e;
         }
     }
 }

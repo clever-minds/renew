@@ -14,7 +14,7 @@
                         </div>
                         <div>
                             <h2 class="text-2xl font-black">{{ $service->name }}</h2>
-                            <p class="text-slate-400 font-medium opacity-80">${{ number_format($service->price, 2) }} / {{ ucfirst($service->billing_cycle->value) }}</p>
+                            <p class="text-slate-400 font-medium opacity-80">₹{{ number_format($service->price, 2) }} / {{ ucfirst($service->billing_cycle->value) }}</p>
                             <div class="flex items-center mt-2 space-x-3">
                                 <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest {{ $service->is_active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400' }} border border-white/10">
                                     {{ $service->is_active ? 'Active' : 'Inactive' }}
@@ -37,7 +37,7 @@
                 <!-- Stats -->
                 <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
                     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Total MRR</p>
-                    <p class="text-2xl font-black text-gray-900">${{ number_format($service->subscriptions()->where('status', 'active')->count() * $service->price, 2) }}</p>
+                    <p class="text-2xl font-black text-gray-900">₹{{ number_format($service->subscriptions()->where('status', 'active')->count() * $service->price, 2) }}</p>
                     <p class="text-[10px] text-emerald-600 font-bold mt-1 uppercase">From active subs</p>
                 </div>
                 <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
@@ -101,7 +101,7 @@
                                     </div>
                                 </td>
                                 <td class="px-8 py-4">
-                                    <p class="text-sm font-black text-gray-900">${{ number_format($sub->price, 2) }}</p>
+                                    <p class="text-sm font-black text-gray-900">₹{{ number_format($sub->price, 2) }}</p>
                                 </td>
                                 <td class="px-8 py-4">
                                     <p class="text-xs font-bold text-gray-500">{{ $sub->next_due_date ? $sub->next_due_date->format('M d, Y') : 'N/A' }}</p>
@@ -146,7 +146,7 @@
                 <div>
                     <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Price</label>
                     <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
                         <input type="number" name="price" value="{{ $service->price }}" step="0.01" min="0" required class="w-full pl-8 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                     </div>
                 </div>

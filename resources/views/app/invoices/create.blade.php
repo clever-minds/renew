@@ -69,7 +69,7 @@
                                     <div class="md:col-span-2">
                                         <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Unit Price</label>
                                         <div class="relative">
-                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">₹</span>
                                             <input type="number" name="items[0][unit_price]" required step="0.01" min="0"
                                                    class="w-full pl-7 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm item-price" placeholder="0.00">
                                         </div>
@@ -77,7 +77,7 @@
                                     <div class="md:col-span-2">
                                         <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Row Total</label>
                                         <div class="relative">
-                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">$</span>
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">₹</span>
                                             <input type="number" readonly step="0.01"
                                                    class="w-full pl-7 rounded-xl border-gray-200 bg-gray-100 text-gray-600 text-sm font-bold item-total" value="0.00">
                                         </div>
@@ -112,15 +112,15 @@
                             <div class="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 space-y-3">
                                 <div class="flex justify-between items-center text-sm">
                                     <span class="text-gray-500 font-medium">Subtotal</span>
-                                    <span id="subtotal" class="font-bold text-gray-900">$0.00</span>
+                                    <span id="subtotal" class="font-bold text-gray-900">₹0.00</span>
                                 </div>
                                 <div class="flex justify-between items-center text-sm">
                                     <span class="text-gray-500 font-medium">Tax Amount</span>
-                                    <span id="tax" class="font-bold text-gray-900">$0.00</span>
+                                    <span id="tax" class="font-bold text-gray-900">₹0.00</span>
                                 </div>
                                 <div class="flex justify-between items-center pt-3 border-t border-gray-200">
                                     <span class="text-lg font-extrabold text-gray-900 uppercase tracking-wider">Grand Total</span>
-                                    <span id="total" class="text-2xl font-black text-indigo-600">$0.00</span>
+                                    <span id="total" class="text-2xl font-black text-indigo-600">₹0.00</span>
                                 </div>
                             </div>
                         </div>
@@ -204,9 +204,9 @@
             const tax = subtotal * (taxRate / 100);
             const total = subtotal + tax;
 
-            document.getElementById('subtotal').textContent = '$' + subtotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            document.getElementById('tax').textContent = '$' + tax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            document.getElementById('total').textContent = '$' + total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('subtotal').textContent = '₹' + subtotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('tax').textContent = '₹' + tax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('total').textContent = '₹' + total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
         }
 
         // Initialize totals

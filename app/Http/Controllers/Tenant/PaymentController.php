@@ -34,7 +34,7 @@ class PaymentController extends Controller
             return \Yajra\DataTables\Facades\DataTables::of($query)
                 ->addIndexColumn()
                 ->editColumn('amount', function($row){
-                    return '$' . number_format((float)$row->amount, 2);
+                    return '₹' . number_format((float)$row->amount, 2);
                 })
                 ->editColumn('payment_date', function($row){
                     return \Carbon\Carbon::parse($row->payment_date)->format('M d, Y');

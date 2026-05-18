@@ -30,13 +30,13 @@
             <!-- Total Revenue Card -->
             <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-center">
                 <p class="text-sm font-medium text-gray-500 uppercase tracking-widest">Total Revenue</p>
-                <p class="text-4xl font-extrabold text-gray-900 mt-2">${{ number_format($totalRevenue, 2) }}</p>
+                <p class="text-4xl font-extrabold text-gray-900 mt-2">₹{{ number_format($totalRevenue, 2) }}</p>
                 <div class="mt-6 space-y-4">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-widest border-b pb-2">By Payment Method</p>
                     @foreach($revenueByMethod as $method => $amount)
                         <div class="flex items-center justify-between">
                             <span class="text-sm text-gray-600 capitalize">{{ str_replace('_', ' ', $method) }}</span>
-                            <span class="text-sm font-bold text-gray-900">${{ number_format($amount, 2) }}</span>
+                            <span class="text-sm font-bold text-gray-900">₹{{ number_format($amount, 2) }}</span>
                         </div>
                     @endforeach
                 </div>
@@ -93,7 +93,7 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-emerald-600">
-                                    +${{ number_format((float)$payment->amount, 2) }}
+                                    +₹{{ number_format((float)$payment->amount, 2) }}
                                 </td>
                             </tr>
                         @empty

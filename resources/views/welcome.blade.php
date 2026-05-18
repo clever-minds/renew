@@ -26,8 +26,12 @@
                 <a href="#features" class="text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors">Features</a>
                 <a href="#pricing" class="text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors">Pricing</a>
                 <div class="h-4 w-px bg-gray-200"></div>
-                <a href="{{ route('login') }}" class="text-sm font-bold text-gray-900 hover:text-indigo-600 transition-colors">Login</a>
-                <a href="{{ route('register') }}" class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">Start Free</a>
+                @auth
+                    <a href="{{ auth()->user()->is_super_admin ? route('admin.dashboard') : route('app.dashboard') }}" class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">Dashboard</a>
+                @else
+                    <a href="{{ route('login') }}" class="text-sm font-bold text-gray-900 hover:text-indigo-600 transition-colors">Login</a>
+                    <a href="{{ route('register') }}" class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">Start Free</a>
+                @endauth
             </div>
         </div>
     </nav>
@@ -53,9 +57,15 @@
                     The all-in-one command center for agencies to manage subscriptions, automate recurring invoices, and scale MRR without the headache.
                 </p>
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <a href="{{ route('register') }}" class="w-full sm:w-auto px-10 py-5 bg-indigo-600 text-white rounded-[2rem] text-lg font-black shadow-2xl shadow-indigo-200 hover:bg-indigo-700 transition-all transform hover:-translate-y-1">
-                        Start Growing Free
-                    </a>
+                    @auth
+                        <a href="{{ auth()->user()->is_super_admin ? route('admin.dashboard') : route('app.dashboard') }}" class="w-full sm:w-auto px-10 py-5 bg-indigo-600 text-white rounded-[2rem] text-lg font-black shadow-2xl shadow-indigo-200 hover:bg-indigo-700 transition-all transform hover:-translate-y-1">
+                            Go to Dashboard
+                        </a>
+                    @else
+                        <a href="{{ route('register') }}" class="w-full sm:w-auto px-10 py-5 bg-indigo-600 text-white rounded-[2rem] text-lg font-black shadow-2xl shadow-indigo-200 hover:bg-indigo-700 transition-all transform hover:-translate-y-1">
+                            Start Growing Free
+                        </a>
+                    @endauth
                     <a href="#features" class="w-full sm:w-auto px-10 py-5 bg-white text-gray-900 rounded-[2rem] text-lg font-black border-2 border-gray-100 hover:border-indigo-100 transition-all">
                         Explore Features
                     </a>
@@ -90,7 +100,7 @@
                     <p class="text-gray-500 text-sm font-medium mb-8 leading-relaxed">{{ $plan->description }}</p>
                     
                     <div class="flex items-baseline gap-1 mb-10">
-                        <span class="text-5xl font-black tracking-tighter text-gray-900">${{ number_format($plan->price, 0) }}</span>
+                        <span class="text-5xl font-black tracking-tighter text-gray-900">₹{{ number_format($plan->price, 0) }}</span>
                         <span class="text-gray-400 font-bold uppercase tracking-widest text-xs">/ {{ $plan->billing_cycle->value }}</span>
                     </div>
                     

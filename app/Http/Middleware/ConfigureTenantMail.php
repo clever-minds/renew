@@ -30,6 +30,7 @@ class ConfigureTenantMail
                 $smtp = json_decode($settingsRecord->value, true);
 
                 if (!empty($smtp['host']) && !empty($smtp['username'])) {
+                    Config::set('mail.default', 'smtp');
                     Config::set('mail.mailers.smtp.host', $smtp['host']);
                     Config::set('mail.mailers.smtp.port', $smtp['port']);
                     Config::set('mail.mailers.smtp.username', $smtp['username']);

@@ -56,7 +56,7 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    ${{ number_format((float)$sub->price, 2) }}
+                                    ₹{{ number_format((float)$sub->price, 2) }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($sub->next_due_date)

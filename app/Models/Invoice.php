@@ -32,6 +32,7 @@ class Invoice extends Model
         'tax_total' => 'decimal:2',
         'total' => 'decimal:2',
         'amount_paid' => 'decimal:2',
+        'status' => \App\Enums\InvoiceStatus::class,
     ];
 
     public function client()

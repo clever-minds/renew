@@ -23,7 +23,7 @@
                 </div>
                 <div>
                     <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Monthly Revenue</p>
-                    <p class="text-2xl font-bold text-gray-900">${{ number_format($stats['mrr'] ?? 0, 2) }}</p>
+                    <p class="text-2xl font-bold text-gray-900">₹{{ number_format($stats['mrr'] ?? 0, 2) }}</p>
                 </div>
             </div>
 
@@ -34,7 +34,7 @@
                 </div>
                 <div>
                     <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Overdue</p>
-                    <p class="text-2xl font-bold text-red-600">${{ number_format($stats['overdue_amount'] ?? 0, 2) }}</p>
+                    <p class="text-2xl font-bold text-red-600">₹{{ number_format($stats['overdue_amount'] ?? 0, 2) }}</p>
                 </div>
             </div>
 
@@ -73,7 +73,7 @@
                                         </div>
                                     </div>
                                     <div class="text-right">
-                                        <p class="text-sm font-bold text-gray-900">${{ number_format((float)$sub->price, 2) }}</p>
+                                        <p class="text-sm font-bold text-gray-900">₹{{ number_format((float)$sub->price, 2) }}</p>
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ \Carbon\Carbon::parse($sub->next_due_date)->isPast() ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800' }}">
                                             {{ \Carbon\Carbon::parse($sub->next_due_date)->diffForHumans() }}
                                         </span>
@@ -111,7 +111,7 @@
                                         </div>
                                     </div>
                                     <div class="text-right">
-                                        <p class="text-sm font-bold text-emerald-600">+${{ number_format((float)$payment->amount, 2) }}</p>
+                                        <p class="text-sm font-bold text-emerald-600">+₹{{ number_format((float)$payment->amount, 2) }}</p>
                                         <p class="text-[10px] uppercase font-bold text-gray-400">{{ \Carbon\Carbon::parse($payment->payment_date)->format('M d, Y') }}</p>
                                     </div>
                                 </div>

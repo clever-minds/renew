@@ -84,7 +84,7 @@
                     <div>
                         <div class="flex justify-between mb-2 ml-1">
                             <label class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Password</label>
-                            <a href="#" class="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:text-indigo-700">Forgot?</a>
+                            <a href="{{ route('password.request') }}" class="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:text-indigo-700">Forgot?</a>
                         </div>
                         <input id="password" type="password" name="password" required autocomplete="current-password"
                                class="w-full px-5 py-4 rounded-2xl bg-white border border-gray-200 text-gray-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 transition-all outline-none font-medium text-sm placeholder-gray-400">
