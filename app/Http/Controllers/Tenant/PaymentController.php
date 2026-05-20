@@ -46,7 +46,15 @@ class PaymentController extends Controller
                 ->make(true);
         }
 
-        return view('app.payments.index');
+        $invoices = DB::table('invoices')
+            ->join('clients', 'invoices.client_id', '=', 'clients.id')
+            ->where('invoices.tenant_id', session('tenant_id'))
+            ->where('invoices.status', '!=', 'paid')
+            ->select('invoices.id', 'invoices.invoice_number', 'invoices.total', 'invoices.amount_paid', 'clients.name as client_name')
+            ->orderBy('invoices.invoice_number', 'desc')
+            ->get();
+
+        return view('app.payments.index', compact('invoices'));
     }
 
     public function store(StorePaymentRequest $request): RedirectResponse

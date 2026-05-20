@@ -1,3 +1,23 @@
+@php
+    $companySettings = \Illuminate\Support\Facades\DB::table('settings')
+        ->where('tenant_id', session('tenant_id'))
+        ->where('key', 'company_settings')
+        ->first();
+    $company = $companySettings ? json_decode($companySettings->value, true) : [];
+    $currency = $company['currency'] ?? 'INR';
+    $currencySymbols = [
+        'INR' => '&#8377;',
+        'USD' => '$',
+        'EUR' => '&euro;',
+        'GBP' => '&pound;',
+        'AED' => 'د.إ',
+        'CAD' => 'C$',
+        'AUD' => 'A$',
+        'SGD' => 'S$',
+        'JPY' => '&yen;',
+    ];
+    $symbol = $currencySymbols[$currency] ?? '&#8377;';
+@endphp
 <x-app-layout>
     <x-slot name="header">
         Subscription Contract
@@ -55,7 +75,7 @@
             <div class="p-8 grid grid-cols-1 md:grid-cols-4 gap-8 border-b border-gray-50">
                 <div class="space-y-1">
                     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Recurring Price</p>
-                    <p class="text-2xl font-black text-gray-900">₹{{ number_format($subscription->price, 2) }}</p>
+                    <p class="text-2xl font-black text-gray-900">{!! $symbol !!}{{ number_format($subscription->price, 2) }}</p>
                     <p class="text-[10px] text-gray-500 font-bold uppercase">{{ $subscription->service->billing_cycle->value }} cycle</p>
                 </div>
                 <div class="space-y-1">
@@ -121,13 +141,14 @@
         <form method="POST" action="{{ route('app.subscriptions.update', $subscription) }}" class="space-y-6">
             @csrf
             @method('PUT')
+            <input type="hidden" name="client_id" value="{{ $subscription->client_id }}">
 
             <div>
                 <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Service Package</label>
                 <select name="service_id" required class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                     @foreach($services as $service)
                         <option value="{{ $service->id }}" {{ $subscription->service_id === $service->id ? 'selected' : '' }}>
-                            {{ $service->name }} (₹{{ number_format($service->price, 2) }})
+                            {{ $service->name }} ({!! $symbol !!}{{ number_format($service->price, 2) }})
                         </option>
                     @endforeach
                 </select>
@@ -135,10 +156,10 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Custom Price</label>
+                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 font-bold">Custom Price ({{ $currency }})</label>
                     <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
-                        <input type="number" name="price" value="{{ $subscription->price }}" step="0.01" min="0" required class="w-full pl-8 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-800 text-sm font-semibold">{!! $symbol !!}</span>
+                        <input type="number" name="price" value="{{ $subscription->price }}" step="0.01" min="0" required class="w-full pl-10 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-semibold">
                     </div>
                 </div>
                 <div>

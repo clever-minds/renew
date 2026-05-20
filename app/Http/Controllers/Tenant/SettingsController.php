@@ -42,21 +42,48 @@ class SettingsController extends Controller
     public function updateCompany(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'company_name' => ['required', 'string', 'max:255'],
-            'support_email' => ['required', 'email', 'max:255'],
-            'currency' => ['required', 'string', 'size:3'],
+            'company_name'      => ['required', 'string', 'max:255'],
+            'support_email'     => ['required', 'email', 'max:255'],
+            'additional_email'  => ['nullable', 'email', 'max:255'],
+            'currency'          => ['required', 'string', 'size:3'],
+            'support_phone'     => ['nullable', 'string', 'max:50'],
+            'additional_phone'  => ['nullable', 'string', 'max:50'],
+            'address_line1'     => ['nullable', 'string', 'max:255'],
+            'address_city'      => ['nullable', 'string', 'max:100'],
+            'address_state'     => ['nullable', 'string', 'max:100'],
+            'bank_name'         => ['nullable', 'string', 'max:255'],
+            'bank_account'      => ['nullable', 'string', 'max:100'],
+            'bank_ifsc'         => ['nullable', 'string', 'max:100'],
+            'bank_address'      => ['nullable', 'string', 'max:255'],
+            'bank_routing'      => ['nullable', 'string', 'max:100'],
+            'terms_conditions'  => ['nullable', 'string'],
+            'logo'              => ['nullable', 'image', 'mimes:jpg,jpeg,png,svg,webp', 'max:2048'],
         ]);
 
         $tenantId = session('tenant_id');
+
+        // Handle logo upload
+        if ($request->hasFile('logo')) {
+            $logoPath = $request->file('logo')->store("logos/tenant_{$tenantId}", 'public');
+            $validated['logo_url'] = $logoPath;
+        } else {
+            // Keep existing logo if no new file uploaded
+            $existing = $this->settingsService->get((int)$tenantId, 'company_settings', []);
+            if (!empty($existing['logo_url'])) {
+                $validated['logo_url'] = $existing['logo_url'];
+            }
+        }
+
+        unset($validated['logo']); // Don't store the file object itself
         $this->settingsService->set((int)$tenantId, 'company_settings', $validated);
 
         // Sync with Tenant model
         Tenant::where('id', $tenantId)->update([
-            'name' => $validated['company_name'],
+            'name'  => $validated['company_name'],
             'email' => $validated['support_email']
         ]);
 
-        return back()->with('success', 'Company settings updated.');
+        return back()->with('success', 'Company settings updated successfully.');
     }
 
     public function updateSmtp(Request $request): RedirectResponse

@@ -1,3 +1,17 @@
+<?php
+    $currencySymbols = [
+        'INR' => '₹',
+        'USD' => '$',
+        'EUR' => '€',
+        'GBP' => '£',
+        'AED' => 'د.إ',
+        'CAD' => 'C$',
+        'AUD' => 'A$',
+        'SGD' => 'S$',
+        'JPY' => '¥',
+    ];
+    $symbol = $currencySymbols[$company['currency'] ?? 'INR'] ?? ($company['currency'] ?? '₹');
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -234,7 +248,7 @@
         .footer-label {
             color: #9ca3af;
             display: inline-block;
-            width: 60px;
+            width: 95px;
         }
     </style>
 </head>
@@ -246,7 +260,7 @@
             <tr>
                 <td style="width: 50%;">
                     <!-- Simulated Icon and Logo -->
-                    <div class="company-name">RenewPilot</div>
+                    <div class="company-name"><?php echo e($company['company_name'] ?? $tenant->name ?? 'RenewPilot'); ?></div>
                     <div class="company-tagline">SaaS Solutions</div>
                 </td>
                 <td style="width: 50%; text-align: right;">
@@ -260,11 +274,14 @@
             <tr>
                 <td>
                     <div class="section-title">From</div>
-                    <div class="address-name">RenewPilot Inc.</div>
+                    <div class="address-name"><?php echo e($company['company_name'] ?? $tenant->name ?? 'RenewPilot Inc.'); ?></div>
                     <div class="address-text">
-                        123 Business Avenue, Suite 100<br>
-                        New York, NY 10001<br>
-                        <span style="margin-top: 5px; display: block;">support@renewpilot.com</span>
+                        <?php echo e($company['address_line1'] ?? '123 Business Avenue, Suite 100'); ?><br>
+                        <?php echo e($company['address_city'] ?? 'New York'); ?><?php echo e(isset($company['address_state']) ? ', ' . $company['address_state'] : ', NY 10001'); ?><br>
+                        <?php if(!empty($company['support_phone'])): ?>
+                            <?php echo e($company['support_phone']); ?><br>
+                        <?php endif; ?>
+                        <span style="margin-top: 5px; display: block;"><?php echo e($company['support_email'] ?? $tenant->email ?? 'support@renewpilot.com'); ?></span>
                     </div>
                 </td>
                 <td>
@@ -318,8 +335,8 @@
                 <tr>
                     <td class="item-desc"><?php echo e($item->description); ?></td>
                     <td class="item-qty" style="text-align: center;"><?php echo e((int)$item->quantity); ?></td>
-                    <td class="item-price" style="text-align: right;">₹<?php echo e(number_format($item->unit_price, 2)); ?></td>
-                    <td class="item-total" style="text-align: right;">₹<?php echo e(number_format($item->total, 2)); ?></td>
+                    <td class="item-price" style="text-align: right;"><?php echo e($symbol); ?><?php echo e(number_format($item->unit_price, 2)); ?></td>
+                    <td class="item-total" style="text-align: right;"><?php echo e($symbol); ?><?php echo e(number_format($item->total, 2)); ?></td>
                 </tr>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </tbody>
@@ -330,17 +347,17 @@
                 <table class="totals-table">
                     <tr>
                         <td class="totals-label">Subtotal</td>
-                        <td class="totals-value">₹<?php echo e(number_format($invoice->subtotal, 2)); ?></td>
+                        <td class="totals-value"><?php echo e($symbol); ?><?php echo e(number_format($invoice->subtotal, 2)); ?></td>
                     </tr>
                     <?php if($invoice->tax_total > 0): ?>
                     <tr>
                         <td class="totals-label">Tax</td>
-                        <td class="totals-value">₹<?php echo e(number_format($invoice->tax_total, 2)); ?></td>
+                        <td class="totals-value"><?php echo e($symbol); ?><?php echo e(number_format($invoice->tax_total, 2)); ?></td>
                     </tr>
                     <?php endif; ?>
                     <tr class="total-final">
                         <td class="totals-label">Total Due</td>
-                        <td class="totals-value">₹<?php echo e(number_format($invoice->total, 2)); ?></td>
+                        <td class="totals-value"><?php echo e($symbol); ?><?php echo e(number_format($invoice->total, 2)); ?></td>
                     </tr>
                 </table>
             </div>
@@ -352,15 +369,19 @@
                     <td>
                         <div class="section-title">Payment Details</div>
                         <div class="footer-text">
-                            <span class="footer-label">Bank:</span> <strong style="color: #111827;">Chase Bank</strong><br>
-                            <span class="footer-label">Account:</span> <strong style="color: #111827;">1234 5678 9000</strong><br>
-                            <span class="footer-label">Routing:</span> <strong style="color: #111827;">123456789</strong>
+                            <span class="footer-label">Bank Name:</span> <strong style="color: #111827;"><?php echo e($company['bank_name'] ?? 'Chase Bank'); ?></strong><br>
+                            <span class="footer-label">Account No:</span> <strong style="color: #111827;"><?php echo e($company['bank_account'] ?? '1234 5678 9000'); ?></strong><br>
+                            <span class="footer-label">IFSC Code:</span> <strong style="color: #111827;"><?php echo e($company['bank_ifsc'] ?? $company['bank_routing'] ?? '123456789'); ?></strong><br>
+                            <?php if(!empty($company['bank_address'])): ?>
+                                <span class="footer-label">Bank Address:</span> <strong style="color: #111827;"><?php echo e($company['bank_address']); ?></strong>
+                            <?php endif; ?>
                         </div>
                     </td>
                     <td>
                         <div class="section-title">Terms & Conditions</div>
                         <div class="footer-text font-medium">
-                            Please remit payment within 14 days of receiving this invoice. There will be a 1.5% interest charge per month on late invoices. Thank you for your business!
+                            <?php echo e($company['terms_conditions'] ?? 'Please remit payment within 14 days of receiving this invoice. There will be a 1.5% interest charge per month on late invoices. Thank you for your business!'); ?>
+
                         </div>
                     </td>
                 </tr>

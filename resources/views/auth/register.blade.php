@@ -72,19 +72,19 @@
                         <div>
                             <label class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-2 ml-1">Agency Name</label>
                             <input id="company_name" type="text" name="company_name" value="{{ old('company_name') }}" required
-                                   class="w-full px-5 py-4 rounded-2xl bg-white border border-gray-200 text-gray-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 transition-all outline-none font-medium text-sm placeholder-gray-400" placeholder="e.g. Acme Marketing">
+                                   class="w-full px-5 py-4 rounded-2xl bg-white border border-gray-200 text-gray-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 transition-all outline-none font-medium text-sm placeholder-gray-400" placeholder="e.g. Sharma Marketing">
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-2 ml-1">Full Name</label>
                                 <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus
-                                       class="w-full px-5 py-4 rounded-2xl bg-white border border-gray-200 text-gray-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 transition-all outline-none font-medium text-sm placeholder-gray-400" placeholder="John Doe">
+                                       class="w-full px-5 py-4 rounded-2xl bg-white border border-gray-200 text-gray-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 transition-all outline-none font-medium text-sm placeholder-gray-400" placeholder="Aarav Sharma">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-2 ml-1">Email Address</label>
                                 <input id="email" type="email" name="email" value="{{ old('email') }}" required
-                                       class="w-full px-5 py-4 rounded-2xl bg-white border border-gray-200 text-gray-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 transition-all outline-none font-medium text-sm placeholder-gray-400" placeholder="john@example.com">
+                                       class="w-full px-5 py-4 rounded-2xl bg-white border border-gray-200 text-gray-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 transition-all outline-none font-medium text-sm placeholder-gray-400" placeholder="aarav@example.com">
                             </div>
                         </div>
                     </div>

@@ -38,20 +38,28 @@
                 <!-- Details -->
                 <div class="space-y-8">
                     <div>
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Contact Information</p>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Contact & Tax Information</p>
                         <div class="space-y-4">
                             <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400">
+                                <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400" title="Email">
                                     <i class="fas fa-envelope text-xs"></i>
                                 </div>
                                 <p class="text-sm font-bold text-gray-900">{{ $client->email }}</p>
                             </div>
                             <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400">
-                                    <i class="fas fa-phone text-xs"></i>
+                                <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400" title="Mobile Number">
+                                    <i class="fas fa-mobile-alt text-xs"></i>
                                 </div>
                                 <p class="text-sm font-bold text-gray-900">{{ $client->phone ?? 'Not provided' }}</p>
                             </div>
+                            @if($client->gst_number)
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400" title="GST Number">
+                                        <i class="fas fa-file-invoice text-xs"></i>
+                                    </div>
+                                    <p class="text-sm font-bold text-gray-900">GST: {{ $client->gst_number }}</p>
+                                </div>
+                            @endif
                         </div>
                     </div>
 
@@ -60,7 +68,9 @@
                         <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
                             @if($client->billing_address)
                                 <div class="text-sm font-medium text-gray-600 space-y-1">
-                                    @if(isset($client->billing_address['street']))
+                                    @if(isset($client->billing_address['line1']))
+                                        <p>{{ $client->billing_address['line1'] }}</p>
+                                    @elseif(isset($client->billing_address['street']))
                                         <p>{{ $client->billing_address['street'] }}</p>
                                     @endif
                                     @if(isset($client->billing_address['city']) || isset($client->billing_address['state']) || isset($client->billing_address['zip']))
@@ -151,21 +161,47 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Phone</label>
-                    <input type="text" name="phone" value="{{ $client->phone }}" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Mobile Number</label>
+                    <input type="text" name="phone" value="{{ $client->phone }}" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="+91 98765 43210">
                 </div>
                 <div>
                     <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Company</label>
-                    <input type="text" name="company" value="{{ $client->company }}" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    <input type="text" name="company" value="{{ $client->company }}" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="Tata Consultancy Services">
                 </div>
             </div>
 
-            <div>
-                <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Status</label>
-                <select name="status" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                    <option value="active" {{ $client->status === 'active' ? 'selected' : '' }}>Active</option>
-                    <option value="inactive" {{ $client->status === 'inactive' ? 'selected' : '' }}>Inactive</option>
-                </select>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">GST Number</label>
+                    <input type="text" name="gst_number" value="{{ $client->gst_number }}" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="27AAAAA1111A1Z1">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Status</label>
+                    <select name="status" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <option value="active" {{ $client->status === 'active' ? 'selected' : '' }}>Active</option>
+                        <option value="inactive" {{ $client->status === 'inactive' ? 'selected' : '' }}>Inactive</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="bg-gray-50/50 p-4 rounded-xl border border-gray-100 space-y-4">
+                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest">Billing Address</h4>
+                
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Street Address</label>
+                    <input type="text" name="billing_address[line1]" value="{{ $client->billing_address['line1'] ?? $client->billing_address['street'] ?? '' }}" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="123, MG Road">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">City</label>
+                        <input type="text" name="billing_address[city]" value="{{ $client->billing_address['city'] ?? '' }}" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="Mumbai">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Country</label>
+                        <input type="text" name="billing_address[country]" value="{{ $client->billing_address['country'] ?? 'India' }}" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="India">
+                    </div>
+                </div>
             </div>
 
             <div>

@@ -18,6 +18,7 @@ class ClientService
                 'email' => $data['email'] ?? null,
                 'phone' => $data['phone'] ?? null,
                 'company' => $data['company'] ?? null,
+                'gst_number' => $data['gst_number'] ?? null,
                 'billing_address' => $data['billing_address'] ?? null,
                 'notes' => $data['notes'] ?? null,
                 'status' => ClientStatus::ACTIVE->value,

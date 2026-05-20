@@ -1,3 +1,23 @@
+<?php
+    $companySettings = \Illuminate\Support\Facades\DB::table('settings')
+        ->where('tenant_id', session('tenant_id'))
+        ->where('key', 'company_settings')
+        ->first();
+    $company = $companySettings ? json_decode($companySettings->value, true) : [];
+    $currency = $company['currency'] ?? 'INR';
+    $currencySymbols = [
+        'INR' => '&#8377;',
+        'USD' => '$',
+        'EUR' => '&euro;',
+        'GBP' => '&pound;',
+        'AED' => 'د.إ',
+        'CAD' => 'C$',
+        'AUD' => 'A$',
+        'SGD' => 'S$',
+        'JPY' => '&yen;',
+    ];
+    $symbol = $currencySymbols[$currency] ?? '&#8377;';
+?>
 <?php if (isset($component)) { $__componentOriginal9ac128a9029c0e4701924bd2d73d7f54 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54 = $attributes; } ?>
 <?php $component = App\View\Components\AppLayout::resolve([] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
@@ -65,7 +85,7 @@
             <div class="p-8 grid grid-cols-1 md:grid-cols-4 gap-8 border-b border-gray-50">
                 <div class="space-y-1">
                     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Recurring Price</p>
-                    <p class="text-2xl font-black text-gray-900">₹<?php echo e(number_format($subscription->price, 2)); ?></p>
+                    <p class="text-2xl font-black text-gray-900"><?php echo $symbol; ?><?php echo e(number_format($subscription->price, 2)); ?></p>
                     <p class="text-[10px] text-gray-500 font-bold uppercase"><?php echo e($subscription->service->billing_cycle->value); ?> cycle</p>
                 </div>
                 <div class="space-y-1">
@@ -142,13 +162,14 @@
         <form method="POST" action="<?php echo e(route('app.subscriptions.update', $subscription)); ?>" class="space-y-6">
             <?php echo csrf_field(); ?>
             <?php echo method_field('PUT'); ?>
+            <input type="hidden" name="client_id" value="<?php echo e($subscription->client_id); ?>">
 
             <div>
                 <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Service Package</label>
                 <select name="service_id" required class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                     <?php $__currentLoopData = $services; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $service): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <option value="<?php echo e($service->id); ?>" <?php echo e($subscription->service_id === $service->id ? 'selected' : ''); ?>>
-                            <?php echo e($service->name); ?> (₹<?php echo e(number_format($service->price, 2)); ?>)
+                            <?php echo e($service->name); ?> (<?php echo $symbol; ?><?php echo e(number_format($service->price, 2)); ?>)
                         </option>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </select>
@@ -156,10 +177,10 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Custom Price</label>
+                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 font-bold">Custom Price (<?php echo e($currency); ?>)</label>
                     <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
-                        <input type="number" name="price" value="<?php echo e($subscription->price); ?>" step="0.01" min="0" required class="w-full pl-8 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-800 text-sm font-semibold"><?php echo $symbol; ?></span>
+                        <input type="number" name="price" value="<?php echo e($subscription->price); ?>" step="0.01" min="0" required class="w-full pl-10 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-semibold">
                     </div>
                 </div>
                 <div>

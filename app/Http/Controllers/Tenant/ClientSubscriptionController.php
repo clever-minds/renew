@@ -73,7 +73,7 @@ class ClientSubscriptionController extends Controller
         return view('app.subscriptions.show', compact('subscription', 'clients', 'services'));
     }
 
-    public function store(StoreSubscriptionRequest $request, \App\Services\Billing\InvoiceService $invoiceService): RedirectResponse
+    public function store(StoreSubscriptionRequest $request): RedirectResponse
     {
         $data = $request->validated();
         $service = Service::findOrFail($data['service_id']);
@@ -89,24 +89,15 @@ class ClientSubscriptionController extends Controller
             BillingCycle::ONE_TIME => null,
         };
 
-        $subscription = ClientSubscription::create([
+        ClientSubscription::create([
             'client_id' => $data['client_id'],
             'service_id' => $service->id,
             'price' => $data['price'], // Allows override
             'start_date' => $startDate->toDateString(),
             'next_due_date' => $nextDueDate?->toDateString(),
             'status' => SubscriptionStatus::ACTIVE->value,
-            'auto_invoice' => $request->boolean('auto_invoice'),
+            'auto_invoice' => $data['auto_invoice'] ?? true,
         ]);
-
-        // Immediately generate the first invoice if auto-invoicing is enabled
-        if ($subscription->auto_invoice) {
-            try {
-                $invoiceService->generateFromSubscription($subscription);
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Auto-Invoice Generation on Subscription Creation Failed: ' . $e->getMessage());
-            }
-        }
 
         return redirect()->route('app.subscriptions.index')->with('success', 'Subscription assigned successfully.');
     }
@@ -136,7 +127,7 @@ class ClientSubscriptionController extends Controller
             'price' => $data['price'],
             'start_date' => $startDate->toDateString(),
             'next_due_date' => $nextDueDate?->toDateString(),
-            'auto_invoice' => $request->boolean('auto_invoice'),
+            'auto_invoice' => $data['auto_invoice'] ?? true,
         ]);
 
         return redirect()->route('app.subscriptions.index')->with('success', 'Subscription updated successfully.');

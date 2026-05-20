@@ -49,9 +49,17 @@ class ClientController extends Controller
         return view('app.clients.index');
     }
 
-    public function store(StoreClientRequest $request): RedirectResponse
+    public function store(StoreClientRequest $request)
     {
-        $this->clientService->createClient($request->validated());
+        $client = $this->clientService->createClient($request->validated());
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'client' => $client,
+                'message' => 'Client created successfully.'
+            ]);
+        }
 
         return redirect()->route('app.clients.index')->with('success', 'Client created successfully.');
     }

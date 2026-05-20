@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('subscriptions', ClientSubscriptionController::class);
 
         Route::get('invoices/{invoice}/download', [InvoiceController::class, 'downloadPdf'])->name('invoices.download');
+        Route::get('invoices/{invoice}/send', [InvoiceController::class, 'sendMail'])->name('invoices.send');
         Route::resource('invoices', InvoiceController::class);
         
         Route::resource('payments', PaymentController::class)->only(['index', 'store']);

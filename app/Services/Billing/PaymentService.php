@@ -21,7 +21,7 @@ class PaymentService
             }
 
             $newAmountPaid = (float) $invoice->amount_paid + $amount;
-            $status = InvoiceStatus::PARTIAL->value;
+            $status = InvoiceStatus::PARTIALLY_PAID->value;
 
             if ($newAmountPaid >= (float) $invoice->total) {
                 $status = InvoiceStatus::PAID->value;

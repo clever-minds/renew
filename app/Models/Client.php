@@ -22,6 +22,7 @@ class Client extends Model
         'email',
         'phone',
         'company',
+        'gst_number',
         'billing_address',
         'notes',
     ];

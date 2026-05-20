@@ -44,11 +44,17 @@ class AdminController extends Controller
             return \Yajra\DataTables\Facades\DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('action', function($row){
-                    $btn = '';
-                    if($row->status === 'active') {
-                        $btn = '<a href="'.route('admin.tenants.suspend', $row->id).'" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><i class="fas fa-pause"></i></a>';
+                    $csrfToken = csrf_token();
+                    if($row->status === 'active' || $row->status === 'trial') {
+                        $btn = '<form action="'.route('admin.tenants.suspend', $row->id).'" method="POST" style="display:inline">
+                            <input type="hidden" name="_token" value="'.$csrfToken.'">
+                            <button type="submit" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Suspend"><i class="fas fa-pause"></i></button>
+                        </form>';
                     } else {
-                        $btn = '<a href="'.route('admin.tenants.activate', $row->id).'" class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><i class="fas fa-play"></i></a>';
+                        $btn = '<form action="'.route('admin.tenants.activate', $row->id).'" method="POST" style="display:inline">
+                            <input type="hidden" name="_token" value="'.$csrfToken.'">
+                            <button type="submit" class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Activate"><i class="fas fa-play"></i></button>
+                        </form>';
                     }
                     return '<div class="flex items-center space-x-2">'.$btn.'</div>';
                 })

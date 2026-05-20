@@ -1,3 +1,23 @@
+@php
+    $companySettings = \Illuminate\Support\Facades\DB::table('settings')
+        ->where('tenant_id', session('tenant_id'))
+        ->where('key', 'company_settings')
+        ->first();
+    $company = $companySettings ? json_decode($companySettings->value, true) : [];
+    $currency = $company['currency'] ?? 'INR';
+    $currencySymbols = [
+        'INR' => '&#8377;',
+        'USD' => '$',
+        'EUR' => '&euro;',
+        'GBP' => '&pound;',
+        'AED' => 'د.إ',
+        'CAD' => 'C$',
+        'AUD' => 'A$',
+        'SGD' => 'S$',
+        'JPY' => '&yen;',
+    ];
+    $symbol = $currencySymbols[$currency] ?? '&#8377;';
+@endphp
 <x-app-layout>
     <x-slot name="header">
         Create Service
@@ -30,11 +50,12 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label for="price" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Pricing (INR)</label>
+                            <label for="price" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Pricing ({{ $currency }})</label>
                             <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-800 text-sm font-semibold">{!! $symbol !!}</span>
                                 <input type="number" name="price" id="price" step="0.01" min="0" required
-                                       class="w-full pl-8 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="0.00">
+                                       style="padding-left: 2.75rem !important;"
+                                       class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-semibold" placeholder="0.00">
                             </div>
                         </div>
 

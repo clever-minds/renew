@@ -4,6 +4,19 @@
     </x-slot>
 
     <div class="space-y-6">
+        @if(session('success'))
+            <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3 text-emerald-600 text-sm font-bold shadow-sm">
+                <i class="fas fa-check-circle text-base"></i>
+                <span>{{ session('success') }}</span>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-sm font-bold shadow-sm">
+                <i class="fas fa-exclamation-circle text-base"></i>
+                <span>{{ session('error') }}</span>
+            </div>
+        @endif
+
         <!-- Action Bar -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
             <h3 class="text-sm font-bold text-gray-500 uppercase tracking-widest px-2">Invoice Management</h3>
