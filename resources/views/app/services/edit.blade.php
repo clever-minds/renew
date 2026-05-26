@@ -53,9 +53,9 @@
                         <div>
                             <label for="price" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Pricing ({{ $currency }})</label>
                             <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-800 text-sm font-semibold">{!! $symbol !!}</span>
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800 text-sm font-bold">{!! $symbol !!}</span>
                                 <input type="number" name="price" id="price" step="0.01" min="0" value="{{ old('price', $service->price) }}" required
-                                       class="w-full pl-10 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-semibold" placeholder="0.00">
+                                       class="w-full pl-10 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-semibold" style="padding-left: 2.75rem !important;" placeholder="0.00">
                             </div>
                         </div>
 

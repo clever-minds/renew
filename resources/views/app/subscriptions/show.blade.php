@@ -158,8 +158,8 @@
                 <div>
                     <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 font-bold">Custom Price ({{ $currency }})</label>
                     <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-800 text-sm font-semibold">{!! $symbol !!}</span>
-                        <input type="number" name="price" value="{{ $subscription->price }}" step="0.01" min="0" required class="w-full pl-10 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-semibold">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800 text-sm font-semibold">{!! $symbol !!}</span>
+                        <input type="number" name="price" value="{{ $subscription->price }}" step="0.01" min="0" required class="w-full pl-10 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-semibold" style="padding-left: 2.75rem !important;">
                     </div>
                 </div>
                 <div>

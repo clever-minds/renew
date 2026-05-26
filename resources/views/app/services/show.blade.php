@@ -1,3 +1,19 @@
+@php
+    $settingsService = app(\App\Services\Settings\SettingsService::class);
+    $currency = $settingsService->get(auth()->user()->tenant_id, 'currency', 'INR');
+    $symbols = [
+        'INR' => '&#8377;',
+        'USD' => '&#36;',
+        'EUR' => '&#8364;',
+        'GBP' => '&#163;',
+        'AED' => 'AED',
+        'CAD' => 'C&#36;',
+        'AUD' => 'A&#36;',
+        'SGD' => 'S&#36;',
+        'JPY' => '&#165;'
+    ];
+    $symbol = $symbols[$currency] ?? $currency;
+@endphp
 <x-app-layout>
     <x-slot name="header">
         Service Details
@@ -14,7 +30,7 @@
                         </div>
                         <div>
                             <h2 class="text-2xl font-black">{{ $service->name }}</h2>
-                            <p class="text-slate-400 font-medium opacity-80">₹{{ number_format($service->price, 2) }} / {{ ucfirst($service->billing_cycle->value) }}</p>
+                            <p class="text-slate-400 font-medium opacity-80">{!! $symbol !!}{{ number_format($service->price, 2) }} / {{ ucfirst($service->billing_cycle->value) }}</p>
                             <div class="flex items-center mt-2 space-x-3">
                                 <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest {{ $service->is_active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400' }} border border-white/10">
                                     {{ $service->is_active ? 'Active' : 'Inactive' }}
@@ -37,7 +53,7 @@
                 <!-- Stats -->
                 <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
                     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Total MRR</p>
-                    <p class="text-2xl font-black text-gray-900">₹{{ number_format($service->subscriptions()->where('status', 'active')->count() * $service->price, 2) }}</p>
+                    <p class="text-2xl font-black text-gray-900">{!! $symbol !!}{{ number_format($service->subscriptions()->where('status', 'active')->count() * $service->price, 2) }}</p>
                     <p class="text-[10px] text-emerald-600 font-bold mt-1 uppercase">From active subs</p>
                 </div>
                 <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
@@ -101,14 +117,17 @@
                                     </div>
                                 </td>
                                 <td class="px-8 py-4">
-                                    <p class="text-sm font-black text-gray-900">₹{{ number_format($sub->price, 2) }}</p>
+                                    <p class="text-sm font-black text-gray-900">{!! $symbol !!}{{ number_format($sub->price, 2) }}</p>
                                 </td>
                                 <td class="px-8 py-4">
                                     <p class="text-xs font-bold text-gray-500">{{ $sub->next_due_date ? $sub->next_due_date->format('M d, Y') : 'N/A' }}</p>
                                 </td>
-                                <td class="px-8 py-4 text-right">
+                                <td class="px-8 py-4 text-right space-x-3">
                                     <a href="{{ route('app.clients.show', $sub->client->id) }}" class="text-[10px] font-black text-indigo-600 hover:text-indigo-800 uppercase tracking-widest">
                                         Profile
+                                    </a>
+                                    <a href="{{ route('app.subscriptions.show', $sub->id) }}" class="text-[10px] font-black text-emerald-600 hover:text-emerald-800 uppercase tracking-widest">
+                                        Contract
                                     </a>
                                 </td>
                             </tr>
@@ -146,8 +165,8 @@
                 <div>
                     <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Price</label>
                     <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
-                        <input type="number" name="price" value="{{ $service->price }}" step="0.01" min="0" required class="w-full pl-8 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800 text-sm font-bold">{!! $symbol !!}</span>
+                        <input type="number" name="price" value="{{ $service->price }}" step="0.01" min="0" required class="w-full pl-10 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" style="padding-left: 2.75rem !important;">
                     </div>
                 </div>
                 <div>

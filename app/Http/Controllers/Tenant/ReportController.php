@@ -50,7 +50,7 @@ class ReportController extends Controller
             ->join('services', 'client_subscriptions.service_id', '=', 'services.id')
             ->where('client_subscriptions.tenant_id', $tenantId)
             ->where('client_subscriptions.status', $status)
-            ->select('client_subscriptions.*', 'clients.name as client_name', 'services.name as service_name', 'services.billing_cycle')
+            ->select('client_subscriptions.*', 'client_subscriptions.id as id', 'clients.name as client_name', 'services.name as service_name', 'services.billing_cycle')
             ->orderBy('client_subscriptions.next_due_date', 'asc')
             ->paginate(20)
             ->withQueryString();

@@ -103,14 +103,14 @@
                     @if($client->subscriptions->count() > 0)
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             @foreach($client->subscriptions as $subscription)
-                                <div class="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-indigo-200 transition-all group">
+                                <a href="{{ route('app.subscriptions.show', $subscription) }}" class="block p-5 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all group cursor-pointer">
                                     <div class="flex items-start justify-between">
                                         <div class="flex items-center space-x-3">
                                             <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all">
                                                 <i class="fas fa-sync-alt text-xs"></i>
                                             </div>
                                             <div>
-                                                <p class="text-sm font-black text-gray-900">{{ $subscription->service->name }}</p>
+                                                <p class="text-sm font-black text-gray-900 group-hover:text-indigo-700 transition-colors">{{ $subscription->service->name }}</p>
                                                 <p class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Next: {{ $subscription->next_due_date ? $subscription->next_due_date->format('M d, Y') : 'N/A' }}</p>
                                             </div>
                                         </div>
@@ -118,7 +118,7 @@
                                             {{ $subscription->status->value }}
                                         </span>
                                     </div>
-                                </div>
+                                </a>
                             @endforeach
                         </div>
                     @else

@@ -1,3 +1,19 @@
+@php
+    $settingsService = app(\App\Services\Settings\SettingsService::class);
+    $currency = $settingsService->get(auth()->user()->tenant_id, 'currency', 'INR');
+    $symbols = [
+        'INR' => '&#8377;',
+        'USD' => '&#36;',
+        'EUR' => '&#8364;',
+        'GBP' => '&#163;',
+        'AED' => 'AED',
+        'CAD' => 'C&#36;',
+        'AUD' => 'A&#36;',
+        'SGD' => 'S&#36;',
+        'JPY' => '&#165;'
+    ];
+    $symbol = $symbols[$currency] ?? $currency;
+@endphp
 <x-app-layout>
     <x-slot name="header">
         Create Subscription
@@ -96,10 +112,8 @@
                             </button>
                         </div>
                         <select name="client_id" id="client_id" required
-                                @change="if($el.value === 'new') { openAddClientModal = true; $el.value = ''; }"
                                 class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                             <option value="">Select a client...</option>
-                            <option value="new" class="text-indigo-600 font-bold bg-indigo-50">+ Add New Client...</option>
                             @foreach($clients as $client)
                                 <option value="{{ $client->id }}" {{ $selectedClient && $selectedClient->id === $client->id ? 'selected' : '' }}>
                                     {{ $client->name }} ({{ $client->email }})
@@ -125,9 +139,9 @@
                         <div>
                             <label for="price" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Subscription Price</label>
                             <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800 text-sm font-bold">{!! $symbol !!}</span>
                                 <input type="number" name="price" id="price" step="0.01" min="0"
-                                       class="w-full pl-8 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="0.00">
+                                       class="w-full pl-10 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" style="padding-left: 2.75rem !important;" placeholder="0.00">
                             </div>
                             <p class="mt-1 text-[10px] text-gray-400">Overrides the default service price if set.</p>
                         </div>
@@ -161,7 +175,6 @@
                 </form>
             </div>
         </div>
-    </div>
 
     <script>
         document.getElementById('service_id').addEventListener('change', function() {
@@ -303,5 +316,6 @@
                 </form>
             </div>
         </div>
+    </div>
     </div>
 </x-app-layout>

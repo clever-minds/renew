@@ -43,6 +43,7 @@ class SettingsController extends Controller
     {
         $validated = $request->validate([
             'company_name'      => ['required', 'string', 'max:255'],
+            'company_tagline'   => ['nullable', 'string', 'max:255'],
             'support_email'     => ['required', 'email', 'max:255'],
             'additional_email'  => ['nullable', 'email', 'max:255'],
             'currency'          => ['required', 'string', 'size:3'],

@@ -21,7 +21,7 @@ class ClientSubscriptionController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = ClientSubscription::with(['client', 'service']);
+            $query = ClientSubscription::with(['client', 'service'])->select('client_subscriptions.*');
             return \Yajra\DataTables\Facades\DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('client_name', function($row){

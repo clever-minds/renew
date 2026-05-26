@@ -115,12 +115,20 @@
                 <!-- Invoice Header -->
                 <div class="flex justify-between items-start mb-14 mt-4">
                     <div class="flex items-center space-x-4">
-                        <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl print-exact">
-                            <i class="fas fa-paper-plane"></i>
-                        </div>
+                        @if(!empty($company['logo_url']))
+                            <div class="w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden print-exact bg-white">
+                                <img src="{{ asset('storage/' . $company['logo_url']) }}" alt="Logo" class="w-full h-full object-contain">
+                            </div>
+                        @else
+                            <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl print-exact">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                        @endif
                         <div>
                             <span class="text-3xl font-black tracking-tight text-gray-900">{{ $company['company_name'] ?? $tenant->name ?? 'RenewPilot' }}</span>
-                            <p class="text-[10px] text-indigo-600 font-bold tracking-widest uppercase mt-1">SaaS Solutions</p>
+                            @if(!empty($company['company_tagline']))
+                                <p class="text-[10px] text-indigo-600 font-bold tracking-widest uppercase mt-1">{{ $company['company_tagline'] }}</p>
+                            @endif
                         </div>
                     </div>
                     
@@ -233,10 +241,21 @@
                             <span class="font-bold text-gray-900">{{ $symbol }}{{ number_format($invoice->tax_total, 2) }}</span>
                         </div>
                         @endif
+                        @if($invoice->amount_paid > 0)
+                        <div class="flex justify-between text-sm pt-2">
+                            <span class="font-bold text-gray-500 uppercase tracking-wider text-[10px]">Amount Paid</span>
+                            <span class="font-bold text-emerald-600">-{{ $symbol }}{{ number_format($invoice->amount_paid, 2) }}</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-4 border-t border-gray-200 mt-2">
+                            <span class="text-xs font-black text-gray-900 uppercase tracking-widest">Balance Due</span>
+                            <span class="text-3xl font-black text-indigo-600">{{ $symbol }}{{ number_format($invoice->total - $invoice->amount_paid, 2) }}</span>
+                        </div>
+                        @else
                         <div class="flex justify-between items-center pt-4 border-t border-gray-200 mt-2">
                             <span class="text-xs font-black text-gray-900 uppercase tracking-widest">Total Due</span>
                             <span class="text-3xl font-black text-indigo-600">{{ $symbol }}{{ number_format($invoice->total, 2) }}</span>
                         </div>
+                        @endif
                     </div>
                 </div>
 

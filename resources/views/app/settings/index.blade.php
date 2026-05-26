@@ -67,11 +67,16 @@
                     <h4 class="text-xs font-black text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                         <i class="fas fa-info-circle text-[10px]"></i> Basic Information
                     </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div>
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Agency Name <span class="text-red-400">*</span></label>
                             <input type="text" name="company_name" value="{{ $company['company_name'] ?? '' }}" required
                                    class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="e.g. Pixel Digital Agency">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Agency Tagline</label>
+                            <input type="text" name="company_tagline" value="{{ $company['company_tagline'] ?? '' }}"
+                                   class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="e.g. SaaS Solutions">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Currency <span class="text-red-400">*</span></label>

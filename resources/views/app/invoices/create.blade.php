@@ -1,3 +1,20 @@
+@php
+    $settingsService = app(\App\Services\Settings\SettingsService::class);
+    $currency = $settingsService->get(auth()->user()->tenant_id, 'currency', 'INR');
+    $symbols = [
+        'INR' => '&#8377;',
+        'USD' => '&#36;',
+        'EUR' => '&#8364;',
+        'GBP' => '&#163;',
+        'AED' => 'AED',
+        'CAD' => 'C&#36;',
+        'AUD' => 'A&#36;',
+        'SGD' => 'S&#36;',
+        'JPY' => '&#165;'
+    ];
+    $symbol = $symbols[$currency] ?? $currency;
+    $symbolRaw = html_entity_decode($symbol, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+@endphp
 <x-app-layout>
     <x-slot name="header">
         Create Invoice
@@ -97,10 +114,8 @@
                                 </button>
                             </div>
                             <select name="client_id" id="client_id" required
-                                    @change="if($el.value === 'new') { openAddClientModal = true; $el.value = ''; }"
                                     class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                                 <option value="">Select a client...</option>
-                                <option value="new" class="text-indigo-600 font-bold bg-indigo-50">+ Add New Client...</option>
                                 @foreach($clients as $client)
                                     <option value="{{ $client->id }}">
                                         {{ $client->name }} ({{ $client->email }})
@@ -148,17 +163,17 @@
                                     <div class="md:col-span-2">
                                         <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Unit Price</label>
                                         <div class="relative">
-                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">₹</span>
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800 text-sm font-bold">{!! $symbol !!}</span>
                                             <input type="number" name="items[0][unit_price]" required step="0.01" min="0"
-                                                   class="w-full pl-7 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm item-price" placeholder="0.00">
+                                                   class="w-full pl-10 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm item-price" style="padding-left: 2.75rem !important;" placeholder="0.00">
                                         </div>
                                     </div>
                                     <div class="md:col-span-2">
                                         <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Row Total</label>
                                         <div class="relative">
-                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">₹</span>
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800 text-sm font-bold">{!! $symbol !!}</span>
                                             <input type="number" readonly step="0.01"
-                                                   class="w-full pl-7 rounded-xl border-gray-200 bg-gray-100 text-gray-600 text-sm font-bold item-total" value="0.00">
+                                                   class="w-full pl-10 rounded-xl border-gray-200 bg-gray-100 text-gray-600 text-sm font-bold item-total" style="padding-left: 2.75rem !important;" value="0.00">
                                         </div>
                                     </div>
                                     <div class="md:col-span-1 flex items-end justify-center">
@@ -191,15 +206,15 @@
                             <div class="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 space-y-3">
                                 <div class="flex justify-between items-center text-sm">
                                     <span class="text-gray-500 font-medium">Subtotal</span>
-                                    <span id="subtotal" class="font-bold text-gray-900">₹0.00</span>
+                                    <span id="subtotal" class="font-bold text-gray-900">{!! $symbol !!}0.00</span>
                                 </div>
                                 <div class="flex justify-between items-center text-sm">
                                     <span class="text-gray-500 font-medium">Tax Amount</span>
-                                    <span id="tax" class="font-bold text-gray-900">₹0.00</span>
+                                    <span id="tax" class="font-bold text-gray-900">{!! $symbol !!}0.00</span>
                                 </div>
                                 <div class="flex justify-between items-center pt-3 border-t border-gray-200">
                                     <span class="text-lg font-extrabold text-gray-900 uppercase tracking-wider">Grand Total</span>
-                                    <span id="total" class="text-2xl font-black text-indigo-600">₹0.00</span>
+                                    <span id="total" class="text-2xl font-black text-indigo-600">{!! $symbol !!}0.00</span>
                                 </div>
                             </div>
                         </div>
@@ -216,7 +231,6 @@
                 </form>
             </div>
         </div>
-    </div>
 
     <script>
         let itemIndex = 1;
@@ -283,9 +297,10 @@
             const tax = subtotal * (taxRate / 100);
             const total = subtotal + tax;
 
-            document.getElementById('subtotal').textContent = '₹' + subtotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            document.getElementById('tax').textContent = '₹' + tax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            document.getElementById('total').textContent = '₹' + total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            const symbol = '{{ $symbolRaw }}';
+            document.getElementById('subtotal').textContent = symbol + subtotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('tax').textContent = symbol + tax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('total').textContent = symbol + total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
         }
 
         // Initialize totals
@@ -422,5 +437,6 @@
                 </form>
             </div>
         </div>
+    </div>
     </div>
 </x-app-layout>

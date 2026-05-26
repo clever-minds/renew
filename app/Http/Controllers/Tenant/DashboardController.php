@@ -41,7 +41,7 @@ class DashboardController extends Controller
             ->join('services', 'client_subscriptions.service_id', '=', 'services.id')
             ->where('client_subscriptions.tenant_id', $tenantId)
             ->where('client_subscriptions.status', 'active')
-            ->select('client_subscriptions.*', 'clients.name as client_name', 'services.name as service_name')
+            ->select('client_subscriptions.*', 'client_subscriptions.id as id', 'clients.name as client_name', 'services.name as service_name')
             ->orderBy('next_due_date', 'asc')
             ->limit(5)
             ->get();

@@ -17,12 +17,13 @@
 <head>
     <meta charset="utf-8">
     <title>Invoice {{ $invoice->invoice_number }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         @page {
             margin: 0px;
         }
         body { 
-            font-family: 'DejaVu Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif; 
+            font-family: 'Inter', 'DejaVu Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif; 
             color: #111827; 
             margin: 0;
             padding: 0;
@@ -260,8 +261,27 @@
             <tr>
                 <td style="width: 50%;">
                     <!-- Simulated Icon and Logo -->
-                    <div class="company-name">{{ $company['company_name'] ?? $tenant->name ?? 'RenewPilot' }}</div>
-                    <div class="company-tagline">SaaS Solutions</div>
+                    @if(!empty($company['logo_url']))
+                        @php
+                            $logoPath = storage_path('app/public/' . $company['logo_url']);
+                            $logoData = '';
+                            if(file_exists($logoPath)){
+                                $type = pathinfo($logoPath, PATHINFO_EXTENSION);
+                                $data = file_get_contents($logoPath);
+                                $logoData = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                            }
+                        @endphp
+                        @if($logoData)
+                            <img src="{{ $logoData }}" style="max-height: 50px; max-width: 150px; object-fit: contain; margin-bottom: 5px;">
+                        @else
+                            <div class="company-name">{{ $company['company_name'] ?? $tenant->name ?? 'RenewPilot' }}</div>
+                        @endif
+                    @else
+                        <div class="company-name">{{ $company['company_name'] ?? $tenant->name ?? 'RenewPilot' }}</div>
+                    @endif
+                    @if(!empty($company['company_tagline']))
+                        <div class="company-tagline">{{ $company['company_tagline'] }}</div>
+                    @endif
                 </td>
                 <td style="width: 50%; text-align: right;">
                     <div class="invoice-title">INVOICE</div>
@@ -353,10 +373,21 @@
                         <td class="totals-value">{{ $symbol }}{{ number_format($invoice->tax_total, 2) }}</td>
                     </tr>
                     @endif
+                    @if($invoice->amount_paid > 0)
+                    <tr>
+                        <td class="totals-label">Amount Paid</td>
+                        <td class="totals-value" style="color: #047857;">-{{ $symbol }}{{ number_format($invoice->amount_paid, 2) }}</td>
+                    </tr>
+                    <tr class="total-final">
+                        <td class="totals-label">Balance Due</td>
+                        <td class="totals-value">{{ $symbol }}{{ number_format($invoice->total - $invoice->amount_paid, 2) }}</td>
+                    </tr>
+                    @else
                     <tr class="total-final">
                         <td class="totals-label">Total Due</td>
                         <td class="totals-value">{{ $symbol }}{{ number_format($invoice->total, 2) }}</td>
                     </tr>
+                    @endif
                 </table>
             </div>
         </div>

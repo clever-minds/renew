@@ -16,7 +16,7 @@
         <!-- Action Bar -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
             <h3 class="text-sm font-bold text-gray-500 uppercase tracking-widest px-2">Client Management</h3>
-            <button x-data @click="$dispatch('open-modal', 'create-client')" 
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'create-client' }))" 
                     class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-100">
                 <i class="fas fa-plus mr-2"></i> New Client
             </button>
