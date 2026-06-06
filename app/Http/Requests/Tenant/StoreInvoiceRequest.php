@@ -23,7 +23,10 @@ class StoreInvoiceRequest extends FormRequest
             'items.*.description' => 'required|string|max:255',
             'items.*.quantity' => 'required|numeric|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.hsn_code' => 'nullable|string|max:50',
+            'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
             'tax_rate' => 'nullable|numeric|min:0|max:100',
+            'tax_type' => 'nullable|in:none,cgst_sgst,igst',
         ];
     }
 

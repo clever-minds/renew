@@ -21,12 +21,15 @@ class Service extends Model
         'name',
         'description',
         'price',
+        'hsn_code',
+        'tax_rate',
         'billing_cycle',
         'is_active',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'tax_rate' => 'decimal:2',
         'billing_cycle' => BillingCycle::class,
         'is_active' => 'boolean',
     ];

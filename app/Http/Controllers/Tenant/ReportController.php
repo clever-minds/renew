@@ -36,6 +36,31 @@ class ReportController extends Controller
             return $row->sum('amount');
         });
 
+        if ($request->has('export') && $request->export === 'csv') {
+            $headers = [
+                "Content-type"        => "text/csv",
+                "Content-Disposition" => "attachment; filename=revenue_report_{$startDate}_to_{$endDate}.csv",
+                "Pragma"              => "no-cache",
+                "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+                "Expires"             => "0"
+            ];
+            $callback = function() use($payments) {
+                $file = fopen('php://output', 'w');
+                fputcsv($file, ['Date', 'Client', 'Invoice #', 'Payment Method', 'Amount']);
+                foreach ($payments as $payment) {
+                    fputcsv($file, [
+                        \Carbon\Carbon::parse($payment->payment_date)->format('Y-m-d'),
+                        $payment->client_name,
+                        $payment->invoice_number,
+                        ucwords(str_replace('_', ' ', $payment->payment_method)),
+                        $payment->amount
+                    ]);
+                }
+                fclose($file);
+            };
+            return response()->stream($callback, 200, $headers);
+        }
+
         return view('app.reports.revenue', compact('payments', 'totalRevenue', 'revenueByMethod', 'startDate', 'endDate'));
     }
 

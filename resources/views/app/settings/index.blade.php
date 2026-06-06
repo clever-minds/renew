@@ -67,7 +67,7 @@
                     <h4 class="text-xs font-black text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                         <i class="fas fa-info-circle text-[10px]"></i> Basic Information
                     </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Agency Name <span class="text-red-400">*</span></label>
                             <input type="text" name="company_name" value="{{ $company['company_name'] ?? '' }}" required
@@ -77,6 +77,11 @@
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Agency Tagline</label>
                             <input type="text" name="company_tagline" value="{{ $company['company_tagline'] ?? '' }}"
                                    class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="e.g. SaaS Solutions">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">GSTIN / VAT No.</label>
+                            <input type="text" name="tax_number" value="{{ $company['tax_number'] ?? '' }}"
+                                   class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="e.g. 27AADCB2230M1Z2">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Currency <span class="text-red-400">*</span></label>
@@ -196,6 +201,34 @@
                     </div>
                 </div>
 
+                {{-- ── PAYMENT QR CODE ── --}}
+                <div>
+                    <h4 class="text-xs font-black text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <i class="fas fa-qrcode text-[10px]"></i> Payment QR Code
+                        <span class="text-[9px] text-gray-400 normal-case font-normal tracking-normal">(Printed on invoices next to Bank Details)</span>
+                    </h4>
+                    <div class="flex items-center gap-6">
+                        <div class="w-24 h-24 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden" id="qr-preview-wrap">
+                            @if(!empty($company['qr_code_url']))
+                                <img id="qr-preview" src="{{ asset('storage/' . $company['qr_code_url']) }}" class="w-full h-full object-contain p-1">
+                            @else
+                                <div id="qr-placeholder" class="text-center text-gray-300">
+                                    <i class="fas fa-qrcode text-3xl"></i>
+                                    <p class="text-[9px] mt-1 font-bold uppercase tracking-wider">No QR</p>
+                                </div>
+                                <img id="qr-preview" class="w-full h-full object-contain p-1 hidden">
+                            @endif
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Upload QR Code</label>
+                            <input type="file" name="qr_code" id="qr-input" accept="image/*"
+                                   class="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all"
+                                   style="border: none !important; padding: 0 !important; background: transparent !important;"
+                                   onchange="previewQr(this)">
+                            <p class="text-[10px] text-gray-400 mt-2">JPG, PNG, SVG or WebP — max 2MB. Displayed on invoices &amp; PDF next to payment details.</p>
+                        </div>
+                    </div>
+                </div>
                 {{-- ── TERMS & CONDITIONS ── --}}
                 <div>
                     <h4 class="text-xs font-black text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -285,6 +318,20 @@
                 reader.onload = function(e) {
                     const img = document.getElementById('logo-preview');
                     const placeholder = document.getElementById('logo-placeholder');
+                    img.src = e.target.result;
+                    img.classList.remove('hidden');
+                    if (placeholder) placeholder.classList.add('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function previewQr(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('qr-preview');
+                    const placeholder = document.getElementById('qr-placeholder');
                     img.src = e.target.result;
                     img.classList.remove('hidden');
                     if (placeholder) placeholder.classList.add('hidden');

@@ -272,15 +272,18 @@
                             }
                         @endphp
                         @if($logoData)
-                            <img src="{{ $logoData }}" style="max-height: 50px; max-width: 150px; object-fit: contain; margin-bottom: 5px;">
+                            <img src="{{ $logoData }}" style="max-height: 50px; max-width: 250px; object-fit: contain; margin-bottom: 5px;">
                         @else
                             <div class="company-name">{{ $company['company_name'] ?? $tenant->name ?? 'RenewPilot' }}</div>
+                            @if(!empty($company['company_tagline']))
+                                <div class="company-tagline">{{ $company['company_tagline'] }}</div>
+                            @endif
                         @endif
                     @else
                         <div class="company-name">{{ $company['company_name'] ?? $tenant->name ?? 'RenewPilot' }}</div>
-                    @endif
-                    @if(!empty($company['company_tagline']))
-                        <div class="company-tagline">{{ $company['company_tagline'] }}</div>
+                        @if(!empty($company['company_tagline']))
+                            <div class="company-tagline">{{ $company['company_tagline'] }}</div>
+                        @endif
                     @endif
                 </td>
                 <td style="width: 50%; text-align: right;">
@@ -301,6 +304,9 @@
                         @if(!empty($company['support_phone']))
                             {{ $company['support_phone'] }}<br>
                         @endif
+                        @if(!empty($company['tax_number']))
+                            <span style="font-weight: bold;">GSTIN / VAT:</span> {{ $company['tax_number'] }}<br>
+                        @endif
                         <span style="margin-top: 5px; display: block;">{{ $company['support_email'] ?? $tenant->email ?? 'support@renewpilot.com' }}</span>
                     </div>
                 </td>
@@ -313,7 +319,10 @@
                         @endif
                         {{ $client->email }}<br>
                         @if($client->phone)
-                            {{ $client->phone }}
+                            {{ $client->phone }}<br>
+                        @endif
+                        @if($client->gst_number)
+                            <span style="font-weight: bold;">GSTIN:</span> {{ $client->gst_number }}
                         @endif
                     </div>
                 </td>
@@ -333,7 +342,7 @@
                 <td>
                     <div class="meta-label">Payment Status</div>
                     <div class="status-badge status-{{ strtolower(is_string($invoice->status) ? $invoice->status : $invoice->status->value) }}">
-                        {{ ucfirst(is_string($invoice->status) ? $invoice->status : $invoice->status->value) }}
+                        {{ ucwords(str_replace('_', ' ', strtolower(is_string($invoice->status) ? $invoice->status : $invoice->status->value))) }}
                     </div>
                 </td>
             </tr>
@@ -342,18 +351,22 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th style="width: 50%;">Description</th>
-                    <th style="width: 15%; text-align: center;">Qty</th>
-                    <th style="width: 17.5%; text-align: right;">Price</th>
-                    <th style="width: 17.5%; text-align: right;">Total</th>
+                    <th style="width: 35%;">Description</th>
+                    <th style="width: 15%; text-align: center;">HSN/SAC</th>
+                    <th style="width: 10%; text-align: center;">Qty</th>
+                    <th style="width: 15%; text-align: right;">Price</th>
+                    <th style="width: 10%; text-align: right;">GST %</th>
+                    <th style="width: 15%; text-align: right;">Total</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($items as $item)
                 <tr>
                     <td class="item-desc">{{ $item->description }}</td>
+                    <td class="item-qty" style="text-align: center;">{{ $item->hsn_code ?? '-' }}</td>
                     <td class="item-qty" style="text-align: center;">{{ (int)$item->quantity }}</td>
                     <td class="item-price" style="text-align: right;">{{ $symbol }}{{ number_format($item->unit_price, 2) }}</td>
+                    <td class="item-qty" style="text-align: right;">{{ number_format($item->tax_rate, 2) }}%</td>
                     <td class="item-total" style="text-align: right;">{{ $symbol }}{{ number_format($item->total, 2) }}</td>
                 </tr>
                 @endforeach
@@ -368,10 +381,26 @@
                         <td class="totals-value">{{ $symbol }}{{ number_format($invoice->subtotal, 2) }}</td>
                     </tr>
                     @if($invoice->tax_total > 0)
-                    <tr>
-                        <td class="totals-label">Tax</td>
-                        <td class="totals-value">{{ $symbol }}{{ number_format($invoice->tax_total, 2) }}</td>
-                    </tr>
+                        @if($invoice->tax_type === 'cgst_sgst')
+                        <tr>
+                            <td class="totals-label">Total CGST</td>
+                            <td class="totals-value">{{ $symbol }}{{ number_format($invoice->tax_total / 2, 2) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="totals-label">Total SGST</td>
+                            <td class="totals-value">{{ $symbol }}{{ number_format($invoice->tax_total / 2, 2) }}</td>
+                        </tr>
+                        @elseif($invoice->tax_type === 'igst')
+                        <tr>
+                            <td class="totals-label">Total IGST</td>
+                            <td class="totals-value">{{ $symbol }}{{ number_format($invoice->tax_total, 2) }}</td>
+                        </tr>
+                        @else
+                        <tr>
+                            <td class="totals-label">Tax</td>
+                            <td class="totals-value">{{ $symbol }}{{ number_format($invoice->tax_total, 2) }}</td>
+                        </tr>
+                        @endif
                     @endif
                     @if($invoice->amount_paid > 0)
                     <tr>
@@ -393,20 +422,58 @@
         </div>
 
         <div class="footer">
+            @php
+                $qrData = '';
+                $hasBankDetails = !empty($company['bank_name']) || !empty($company['bank_account']);
+                $hasQrCode = !empty($company['qr_code_url']);
+
+                if($hasQrCode) {
+                    $qrPath = storage_path('app/public/' . $company['qr_code_url']);
+                    if(file_exists($qrPath)){
+                        $type = pathinfo($qrPath, PATHINFO_EXTENSION);
+                        $data = file_get_contents($qrPath);
+                        $qrData = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                    }
+                } elseif (!$hasBankDetails) {
+                    $defaultQrPath = public_path('default_qr.png');
+                    if(file_exists($defaultQrPath)){
+                        $type = pathinfo($defaultQrPath, PATHINFO_EXTENSION);
+                        $data = file_get_contents($defaultQrPath);
+                        $qrData = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                    }
+                }
+
+                $bankName = $company['bank_name'] ?? '';
+                $bankAccount = $company['bank_account'] ?? '';
+                $bankIfsc = $company['bank_ifsc'] ?? $company['bank_routing'] ?? '';
+                $bankAddress = $company['bank_address'] ?? '';
+
+                if (!$hasBankDetails && !$hasQrCode) {
+                    $bankName = 'Indusind Bank';
+                    $bankAccount = '249998144401';
+                    $bankIfsc = 'INDB000012';
+                    $bankAddress = 'Vasna Road';
+                }
+            @endphp
             <table class="footer-table">
                 <tr>
-                    <td>
+                    <td style="width: {{ $qrData ? '40%' : '50%' }};">
                         <div class="section-title">Payment Details</div>
                         <div class="footer-text">
-                            <span class="footer-label">Bank Name:</span> <strong style="color: #111827;">{{ $company['bank_name'] ?? 'Chase Bank' }}</strong><br>
-                            <span class="footer-label">Account No:</span> <strong style="color: #111827;">{{ $company['bank_account'] ?? '1234 5678 9000' }}</strong><br>
-                            <span class="footer-label">IFSC Code:</span> <strong style="color: #111827;">{{ $company['bank_ifsc'] ?? $company['bank_routing'] ?? '123456789' }}</strong><br>
-                            @if(!empty($company['bank_address']))
-                                <span class="footer-label">Bank Address:</span> <strong style="color: #111827;">{{ $company['bank_address'] }}</strong>
-                            @endif
+                            @if(!empty($bankName)) <span class="footer-label">Bank Name:</span> <strong style="color: #111827;">{{ $bankName }}</strong><br> @endif
+                            @if(!empty($bankAccount)) <span class="footer-label">Account No:</span> <strong style="color: #111827;">{{ $bankAccount }}</strong><br> @endif
+                            @if(!empty($bankIfsc)) <span class="footer-label">IFSC Code:</span> <strong style="color: #111827;">{{ $bankIfsc }}</strong><br> @endif
+                            @if(!empty($bankAddress)) <span class="footer-label">Bank Address:</span> <strong style="color: #111827;">{{ $bankAddress }}</strong> @endif
                         </div>
                     </td>
-                    <td>
+                    @if($qrData)
+                    <td style="width: 20%; text-align: center; vertical-align: middle; padding-right: 20px;">
+                        <div style="padding: 5px; border: 2px solid #4b5563; border-radius: 8px; display: inline-block; background-color: #fff;">
+                            <img src="{{ $qrData }}" style="width: 80px; height: 80px; object-fit: contain;">
+                        </div>
+                    </td>
+                    @endif
+                    <td style="width: {{ $qrData ? '40%' : '50%' }};">
                         <div class="section-title">Terms & Conditions</div>
                         <div class="footer-text font-medium">
                             {{ $company['terms_conditions'] ?? 'Please remit payment within 14 days of receiving this invoice. There will be a 1.5% interest charge per month on late invoices. Thank you for your business!' }}

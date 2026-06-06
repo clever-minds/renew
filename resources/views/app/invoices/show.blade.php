@@ -116,20 +116,20 @@
                 <div class="flex justify-between items-start mb-14 mt-4">
                     <div class="flex items-center space-x-4">
                         @if(!empty($company['logo_url']))
-                            <div class="w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden print-exact bg-white">
-                                <img src="{{ asset('storage/' . $company['logo_url']) }}" alt="Logo" class="w-full h-full object-contain">
+                            <div class="h-16 flex items-center justify-start print-exact bg-white">
+                                <img src="{{ asset('storage/' . $company['logo_url']) }}" alt="Logo" class="h-full w-auto object-contain max-w-[250px]">
                             </div>
                         @else
                             <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl print-exact">
                                 <i class="fas fa-paper-plane"></i>
                             </div>
+                            <div>
+                                <span class="text-3xl font-black tracking-tight text-gray-900">{{ $company['company_name'] ?? $tenant->name ?? 'RenewPilot' }}</span>
+                                @if(!empty($company['company_tagline']))
+                                    <p class="text-[10px] text-indigo-600 font-bold tracking-widest uppercase mt-1">{{ $company['company_tagline'] }}</p>
+                                @endif
+                            </div>
                         @endif
-                        <div>
-                            <span class="text-3xl font-black tracking-tight text-gray-900">{{ $company['company_name'] ?? $tenant->name ?? 'RenewPilot' }}</span>
-                            @if(!empty($company['company_tagline']))
-                                <p class="text-[10px] text-indigo-600 font-bold tracking-widest uppercase mt-1">{{ $company['company_tagline'] }}</p>
-                            @endif
-                        </div>
                     </div>
                     
                     <div class="text-right">
@@ -152,6 +152,9 @@
                             @if(!empty($company['support_phone']))
                                 <p class="text-sm text-gray-600">{{ $company['support_phone'] }}</p>
                             @endif
+                            @if(!empty($company['tax_number']))
+                                <p class="text-sm text-gray-600"><span class="font-bold">GSTIN / VAT:</span> {{ $company['tax_number'] }}</p>
+                            @endif
                             <p class="text-sm text-gray-600 mt-2">{{ $company['support_email'] ?? $tenant->email ?? 'support@renewpilot.com' }}</p>
                         </div>
                     </div>
@@ -167,6 +170,9 @@
                             <p class="text-sm text-gray-600">{{ $client->email }}</p>
                             @if($client->phone) 
                                 <p class="text-sm text-gray-600">{{ $client->phone }}</p> 
+                            @endif
+                            @if($client->gst_number)
+                                <p class="text-sm text-gray-600 mt-1"><span class="font-bold">GSTIN:</span> {{ $client->gst_number }}</p>
                             @endif
                         </div>
                     </div>
@@ -188,7 +194,7 @@
                             @if($invoiceStatus === 'paid') bg-green-100 text-green-700 print-exact
                             @elseif($invoiceStatus === 'unpaid') bg-amber-100 text-amber-700 print-exact
                             @else bg-gray-200 text-gray-800 print-exact @endif">
-                            {{ ucfirst($invoiceStatus) }}
+                            {{ str_replace('_', ' ', $invoiceStatus) }}
                         </span>
                     </div>
                 </div>
@@ -199,9 +205,11 @@
                         <thead>
                             <tr>
                                 <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest">Description</th>
-                                <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-center w-24">Qty</th>
-                                <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-right w-32">Price</th>
-                                <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-right w-32">Total</th>
+                                <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-center w-24">HSN/SAC</th>
+                                <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-center w-16">Qty</th>
+                                <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-right w-28">Price</th>
+                                <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-right w-24">GST %</th>
+                                <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-right w-28">Total</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -211,10 +219,16 @@
                                     <p class="text-sm font-bold text-gray-900">{{ $item->description }}</p>
                                 </td>
                                 <td class="py-5 text-center text-sm font-medium text-gray-600">
+                                    {{ $item->hsn_code ?? '-' }}
+                                </td>
+                                <td class="py-5 text-center text-sm font-medium text-gray-600">
                                     {{ (int)$item->quantity }}
                                 </td>
                                 <td class="py-5 text-right text-sm font-medium text-gray-600">
                                     {{ $symbol }}{{ number_format($item->unit_price, 2) }}
+                                </td>
+                                <td class="py-5 text-right text-sm font-medium text-gray-600">
+                                    {{ number_format($item->tax_rate, 2) }}%
                                 </td>
                                 <td class="py-5 text-right text-sm font-black text-gray-900">
                                     {{ $symbol }}{{ number_format($item->total, 2) }}
@@ -236,10 +250,26 @@
                             <span class="font-bold text-gray-900">{{ $symbol }}{{ number_format($invoice->subtotal, 2) }}</span>
                         </div>
                         @if($invoice->tax_total > 0)
-                        <div class="flex justify-between text-sm">
-                            <span class="font-bold text-gray-500 uppercase tracking-wider text-[10px]">Tax</span>
-                            <span class="font-bold text-gray-900">{{ $symbol }}{{ number_format($invoice->tax_total, 2) }}</span>
-                        </div>
+                            @if($invoice->tax_type === 'cgst_sgst')
+                            <div class="flex justify-between text-sm">
+                                <span class="font-bold text-gray-500 uppercase tracking-wider text-[10px]">Total CGST</span>
+                                <span class="font-bold text-gray-900">{{ $symbol }}{{ number_format($invoice->tax_total / 2, 2) }}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="font-bold text-gray-500 uppercase tracking-wider text-[10px]">Total SGST</span>
+                                <span class="font-bold text-gray-900">{{ $symbol }}{{ number_format($invoice->tax_total / 2, 2) }}</span>
+                            </div>
+                            @elseif($invoice->tax_type === 'igst')
+                            <div class="flex justify-between text-sm">
+                                <span class="font-bold text-gray-500 uppercase tracking-wider text-[10px]">Total IGST</span>
+                                <span class="font-bold text-gray-900">{{ $symbol }}{{ number_format($invoice->tax_total, 2) }}</span>
+                            </div>
+                            @else
+                            <div class="flex justify-between text-sm">
+                                <span class="font-bold text-gray-500 uppercase tracking-wider text-[10px]">Tax</span>
+                                <span class="font-bold text-gray-900">{{ $symbol }}{{ number_format($invoice->tax_total, 2) }}</span>
+                            </div>
+                            @endif
                         @endif
                         @if($invoice->amount_paid > 0)
                         <div class="flex justify-between text-sm pt-2">
@@ -261,19 +291,48 @@
 
                 <!-- Footer details -->
                 <div class="border-t-2 border-gray-100 pt-8">
-                    <div class="grid grid-cols-2 gap-12">
-                        <div>
+                    @php
+                        $hasBankDetails = !empty($company['bank_name']) || !empty($company['bank_account']);
+                        $hasQrCode = !empty($company['qr_code_url']);
+                        
+                        $bankName = $company['bank_name'] ?? '';
+                        $bankAccount = $company['bank_account'] ?? '';
+                        $bankIfsc = $company['bank_ifsc'] ?? $company['bank_routing'] ?? '';
+                        $bankAddress = $company['bank_address'] ?? '';
+
+                        if (!$hasBankDetails && !$hasQrCode) {
+                            $bankName = 'Indusind Bank';
+                            $bankAccount = '249998144401';
+                            $bankIfsc = 'INDB000012';
+                            $bankAddress = 'Vasna Road';
+                        }
+                    @endphp
+                    <div class="flex justify-between items-start gap-8">
+                        <div class="flex-1">
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Payment Details</p>
                             <div class="space-y-1">
-                                <p class="text-xs font-semibold text-gray-700"><span class="text-gray-400 font-normal w-28 inline-block">Bank Name:</span> {{ $company['bank_name'] ?? 'Chase Bank' }}</p>
-                                <p class="text-xs font-semibold text-gray-700"><span class="text-gray-400 font-normal w-28 inline-block">Account No:</span> {{ $company['bank_account'] ?? '1234 5678 9000' }}</p>
-                                <p class="text-xs font-semibold text-gray-700"><span class="text-gray-400 font-normal w-28 inline-block">IFSC Code:</span> {{ $company['bank_ifsc'] ?? $company['bank_routing'] ?? '123456789' }}</p>
-                                @if(!empty($company['bank_address']))
-                                    <p class="text-xs font-semibold text-gray-700"><span class="text-gray-400 font-normal w-28 inline-block">Bank Address:</span> {{ $company['bank_address'] }}</p>
+                                @if(!empty($bankName)) <p class="text-xs font-semibold text-gray-700"><span class="text-gray-400 font-normal w-28 inline-block">Bank Name:</span> {{ $bankName }}</p> @endif
+                                @if(!empty($bankAccount)) <p class="text-xs font-semibold text-gray-700"><span class="text-gray-400 font-normal w-28 inline-block">Account No:</span> {{ $bankAccount }}</p> @endif
+                                @if(!empty($bankIfsc)) <p class="text-xs font-semibold text-gray-700"><span class="text-gray-400 font-normal w-28 inline-block">IFSC Code:</span> {{ $bankIfsc }}</p> @endif
+                                @if(!empty($bankAddress))
+                                    <p class="text-xs font-semibold text-gray-700"><span class="text-gray-400 font-normal w-28 inline-block">Bank Address:</span> {{ $bankAddress }}</p>
                                 @endif
                             </div>
                         </div>
-                        <div>
+
+                        @if($hasQrCode || !$hasBankDetails)
+                        <div class="w-32 flex-shrink-0 flex justify-center">
+                            <div class="p-2 border-2 border-gray-100 rounded-xl bg-white inline-block">
+                                @if($hasQrCode)
+                                    <img src="{{ asset('storage/' . $company['qr_code_url']) }}" alt="Payment QR" class="w-24 h-24 object-contain">
+                                @else
+                                    <img src="{{ asset('default_qr.png') }}" alt="Payment QR" class="w-24 h-24 object-contain">
+                                @endif
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <div class="flex-1">
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Terms & Conditions</p>
                             <p class="text-xs text-gray-500 leading-relaxed font-medium">
                                 {{ $company['terms_conditions'] ?? 'Please remit payment within 14 days of receiving this invoice. There will be a 1.5% interest charge per month on late invoices. Thank you for your business!' }}

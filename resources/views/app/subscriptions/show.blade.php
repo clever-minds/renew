@@ -179,7 +179,7 @@
                     Terminate Contract
                 </button>
                 <div class="flex space-x-3">
-                    <button type="button" @click="$dispatch('close-modal')" class="text-sm font-bold text-gray-400 hover:text-gray-600">
+                    <button type="button" @click="$dispatch('close-modal', 'edit-subscription-{{ $subscription->id }}')" class="text-sm font-bold text-gray-400 hover:text-gray-600">
                         Cancel
                     </button>
                     <button type="submit" class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-100 transition-all">

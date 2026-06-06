@@ -138,7 +138,7 @@
                             <option value="">Select a service...</option>
                             <?php $__currentLoopData = $services; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $service): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <option value="<?php echo e($service->id); ?>" data-price="<?php echo e($service->price); ?>" data-cycle="<?php echo e($service->billing_cycle->value); ?>">
-                                    <?php echo e($service->name); ?> - ₹<?php echo e(number_format($service->price, 2)); ?>/<?php echo e(ucfirst($service->billing_cycle->value)); ?>
+                                    <?php echo e($service->name); ?> - ₹<?php echo e(number_format($service->price, 2)); ?>/<?php echo e(ucwords(str_replace('_', ' ', $service->billing_cycle->value))); ?>
 
                                 </option>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>

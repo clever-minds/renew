@@ -79,6 +79,18 @@
                                 <option value="one-time">One-Time</option>
                             </select>
                         </div>
+                        
+                        <div>
+                            <label for="hsn_code" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">HSN/SAC Code</label>
+                            <input type="text" name="hsn_code" id="hsn_code"
+                                   class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="e.g. 9983">
+                        </div>
+                        
+                        <div>
+                            <label for="tax_rate" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">GST Rate (%)</label>
+                            <input type="number" name="tax_rate" id="tax_rate" step="0.01" min="0" max="100" value="0"
+                                   class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="0.00">
+                        </div>
                     </div>
 
                     <div class="flex items-center p-4 bg-gray-50 rounded-xl border border-gray-100">

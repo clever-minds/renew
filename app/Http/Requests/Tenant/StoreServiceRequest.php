@@ -23,6 +23,8 @@ class StoreServiceRequest extends FormRequest
             'price' => ['required', 'numeric', 'min:0'],
             'billing_cycle' => ['required', new Enum(BillingCycle::class)],
             'is_active' => ['boolean'],
+            'hsn_code' => ['nullable', 'string', 'max:50'],
+            'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ];
     }
 }

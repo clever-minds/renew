@@ -125,20 +125,20 @@
                 <div class="flex justify-between items-start mb-14 mt-4">
                     <div class="flex items-center space-x-4">
                         <?php if(!empty($company['logo_url'])): ?>
-                            <div class="w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden print-exact bg-white">
-                                <img src="<?php echo e(asset('storage/' . $company['logo_url'])); ?>" alt="Logo" class="w-full h-full object-contain">
+                            <div class="h-16 flex items-center justify-start print-exact bg-white">
+                                <img src="<?php echo e(asset('storage/' . $company['logo_url'])); ?>" alt="Logo" class="h-full w-auto object-contain max-w-[250px]">
                             </div>
                         <?php else: ?>
                             <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl print-exact">
                                 <i class="fas fa-paper-plane"></i>
                             </div>
+                            <div>
+                                <span class="text-3xl font-black tracking-tight text-gray-900"><?php echo e($company['company_name'] ?? $tenant->name ?? 'RenewPilot'); ?></span>
+                                <?php if(!empty($company['company_tagline'])): ?>
+                                    <p class="text-[10px] text-indigo-600 font-bold tracking-widest uppercase mt-1"><?php echo e($company['company_tagline']); ?></p>
+                                <?php endif; ?>
+                            </div>
                         <?php endif; ?>
-                        <div>
-                            <span class="text-3xl font-black tracking-tight text-gray-900"><?php echo e($company['company_name'] ?? $tenant->name ?? 'RenewPilot'); ?></span>
-                            <?php if(!empty($company['company_tagline'])): ?>
-                                <p class="text-[10px] text-indigo-600 font-bold tracking-widest uppercase mt-1"><?php echo e($company['company_tagline']); ?></p>
-                            <?php endif; ?>
-                        </div>
                     </div>
                     
                     <div class="text-right">
@@ -162,6 +162,9 @@
                             <?php if(!empty($company['support_phone'])): ?>
                                 <p class="text-sm text-gray-600"><?php echo e($company['support_phone']); ?></p>
                             <?php endif; ?>
+                            <?php if(!empty($company['tax_number'])): ?>
+                                <p class="text-sm text-gray-600"><span class="font-bold">GSTIN / VAT:</span> <?php echo e($company['tax_number']); ?></p>
+                            <?php endif; ?>
                             <p class="text-sm text-gray-600 mt-2"><?php echo e($company['support_email'] ?? $tenant->email ?? 'support@renewpilot.com'); ?></p>
                         </div>
                     </div>
@@ -177,6 +180,9 @@
                             <p class="text-sm text-gray-600"><?php echo e($client->email); ?></p>
                             <?php if($client->phone): ?> 
                                 <p class="text-sm text-gray-600"><?php echo e($client->phone); ?></p> 
+                            <?php endif; ?>
+                            <?php if($client->gst_number): ?>
+                                <p class="text-sm text-gray-600 mt-1"><span class="font-bold">GSTIN:</span> <?php echo e($client->gst_number); ?></p>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -198,7 +204,7 @@
                             <?php if($invoiceStatus === 'paid'): ?> bg-green-100 text-green-700 print-exact
                             <?php elseif($invoiceStatus === 'unpaid'): ?> bg-amber-100 text-amber-700 print-exact
                             <?php else: ?> bg-gray-200 text-gray-800 print-exact <?php endif; ?>">
-                            <?php echo e(ucfirst($invoiceStatus)); ?>
+                            <?php echo e(str_replace('_', ' ', $invoiceStatus)); ?>
 
                         </span>
                     </div>
@@ -210,9 +216,11 @@
                         <thead>
                             <tr>
                                 <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest">Description</th>
-                                <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-center w-24">Qty</th>
-                                <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-right w-32">Price</th>
-                                <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-right w-32">Total</th>
+                                <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-center w-24">HSN/SAC</th>
+                                <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-center w-16">Qty</th>
+                                <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-right w-28">Price</th>
+                                <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-right w-24">GST %</th>
+                                <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-right w-28">Total</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -222,12 +230,19 @@
                                     <p class="text-sm font-bold text-gray-900"><?php echo e($item->description); ?></p>
                                 </td>
                                 <td class="py-5 text-center text-sm font-medium text-gray-600">
+                                    <?php echo e($item->hsn_code ?? '-'); ?>
+
+                                </td>
+                                <td class="py-5 text-center text-sm font-medium text-gray-600">
                                     <?php echo e((int)$item->quantity); ?>
 
                                 </td>
                                 <td class="py-5 text-right text-sm font-medium text-gray-600">
                                     <?php echo e($symbol); ?><?php echo e(number_format($item->unit_price, 2)); ?>
 
+                                </td>
+                                <td class="py-5 text-right text-sm font-medium text-gray-600">
+                                    <?php echo e(number_format($item->tax_rate, 2)); ?>%
                                 </td>
                                 <td class="py-5 text-right text-sm font-black text-gray-900">
                                     <?php echo e($symbol); ?><?php echo e(number_format($item->total, 2)); ?>
@@ -250,10 +265,26 @@
                             <span class="font-bold text-gray-900"><?php echo e($symbol); ?><?php echo e(number_format($invoice->subtotal, 2)); ?></span>
                         </div>
                         <?php if($invoice->tax_total > 0): ?>
-                        <div class="flex justify-between text-sm">
-                            <span class="font-bold text-gray-500 uppercase tracking-wider text-[10px]">Tax</span>
-                            <span class="font-bold text-gray-900"><?php echo e($symbol); ?><?php echo e(number_format($invoice->tax_total, 2)); ?></span>
-                        </div>
+                            <?php if($invoice->tax_type === 'cgst_sgst'): ?>
+                            <div class="flex justify-between text-sm">
+                                <span class="font-bold text-gray-500 uppercase tracking-wider text-[10px]">Total CGST</span>
+                                <span class="font-bold text-gray-900"><?php echo e($symbol); ?><?php echo e(number_format($invoice->tax_total / 2, 2)); ?></span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="font-bold text-gray-500 uppercase tracking-wider text-[10px]">Total SGST</span>
+                                <span class="font-bold text-gray-900"><?php echo e($symbol); ?><?php echo e(number_format($invoice->tax_total / 2, 2)); ?></span>
+                            </div>
+                            <?php elseif($invoice->tax_type === 'igst'): ?>
+                            <div class="flex justify-between text-sm">
+                                <span class="font-bold text-gray-500 uppercase tracking-wider text-[10px]">Total IGST</span>
+                                <span class="font-bold text-gray-900"><?php echo e($symbol); ?><?php echo e(number_format($invoice->tax_total, 2)); ?></span>
+                            </div>
+                            <?php else: ?>
+                            <div class="flex justify-between text-sm">
+                                <span class="font-bold text-gray-500 uppercase tracking-wider text-[10px]">Tax</span>
+                                <span class="font-bold text-gray-900"><?php echo e($symbol); ?><?php echo e(number_format($invoice->tax_total, 2)); ?></span>
+                            </div>
+                            <?php endif; ?>
                         <?php endif; ?>
                         <?php if($invoice->amount_paid > 0): ?>
                         <div class="flex justify-between text-sm pt-2">
@@ -275,19 +306,48 @@
 
                 <!-- Footer details -->
                 <div class="border-t-2 border-gray-100 pt-8">
-                    <div class="grid grid-cols-2 gap-12">
-                        <div>
+                    <?php
+                        $hasBankDetails = !empty($company['bank_name']) || !empty($company['bank_account']);
+                        $hasQrCode = !empty($company['qr_code_url']);
+                        
+                        $bankName = $company['bank_name'] ?? '';
+                        $bankAccount = $company['bank_account'] ?? '';
+                        $bankIfsc = $company['bank_ifsc'] ?? $company['bank_routing'] ?? '';
+                        $bankAddress = $company['bank_address'] ?? '';
+
+                        if (!$hasBankDetails && !$hasQrCode) {
+                            $bankName = 'Indusind Bank';
+                            $bankAccount = '249998144401';
+                            $bankIfsc = 'INDB000012';
+                            $bankAddress = 'Vasna Road';
+                        }
+                    ?>
+                    <div class="flex justify-between items-start gap-8">
+                        <div class="flex-1">
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Payment Details</p>
                             <div class="space-y-1">
-                                <p class="text-xs font-semibold text-gray-700"><span class="text-gray-400 font-normal w-28 inline-block">Bank Name:</span> <?php echo e($company['bank_name'] ?? 'Chase Bank'); ?></p>
-                                <p class="text-xs font-semibold text-gray-700"><span class="text-gray-400 font-normal w-28 inline-block">Account No:</span> <?php echo e($company['bank_account'] ?? '1234 5678 9000'); ?></p>
-                                <p class="text-xs font-semibold text-gray-700"><span class="text-gray-400 font-normal w-28 inline-block">IFSC Code:</span> <?php echo e($company['bank_ifsc'] ?? $company['bank_routing'] ?? '123456789'); ?></p>
-                                <?php if(!empty($company['bank_address'])): ?>
-                                    <p class="text-xs font-semibold text-gray-700"><span class="text-gray-400 font-normal w-28 inline-block">Bank Address:</span> <?php echo e($company['bank_address']); ?></p>
+                                <?php if(!empty($bankName)): ?> <p class="text-xs font-semibold text-gray-700"><span class="text-gray-400 font-normal w-28 inline-block">Bank Name:</span> <?php echo e($bankName); ?></p> <?php endif; ?>
+                                <?php if(!empty($bankAccount)): ?> <p class="text-xs font-semibold text-gray-700"><span class="text-gray-400 font-normal w-28 inline-block">Account No:</span> <?php echo e($bankAccount); ?></p> <?php endif; ?>
+                                <?php if(!empty($bankIfsc)): ?> <p class="text-xs font-semibold text-gray-700"><span class="text-gray-400 font-normal w-28 inline-block">IFSC Code:</span> <?php echo e($bankIfsc); ?></p> <?php endif; ?>
+                                <?php if(!empty($bankAddress)): ?>
+                                    <p class="text-xs font-semibold text-gray-700"><span class="text-gray-400 font-normal w-28 inline-block">Bank Address:</span> <?php echo e($bankAddress); ?></p>
                                 <?php endif; ?>
                             </div>
                         </div>
-                        <div>
+
+                        <?php if($hasQrCode || !$hasBankDetails): ?>
+                        <div class="w-32 flex-shrink-0 flex justify-center">
+                            <div class="p-2 border-2 border-gray-100 rounded-xl bg-white inline-block">
+                                <?php if($hasQrCode): ?>
+                                    <img src="<?php echo e(asset('storage/' . $company['qr_code_url'])); ?>" alt="Payment QR" class="w-24 h-24 object-contain">
+                                <?php else: ?>
+                                    <img src="<?php echo e(asset('default_qr.png')); ?>" alt="Payment QR" class="w-24 h-24 object-contain">
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <div class="flex-1">
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Terms & Conditions</p>
                             <p class="text-xs text-gray-500 leading-relaxed font-medium">
                                 <?php echo e($company['terms_conditions'] ?? 'Please remit payment within 14 days of receiving this invoice. There will be a 1.5% interest charge per month on late invoices. Thank you for your business!'); ?>

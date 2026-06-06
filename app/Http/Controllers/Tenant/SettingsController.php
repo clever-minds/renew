@@ -57,8 +57,10 @@ class SettingsController extends Controller
             'bank_ifsc'         => ['nullable', 'string', 'max:100'],
             'bank_address'      => ['nullable', 'string', 'max:255'],
             'bank_routing'      => ['nullable', 'string', 'max:100'],
+            'tax_number'        => ['nullable', 'string', 'max:100'],
             'terms_conditions'  => ['nullable', 'string'],
             'logo'              => ['nullable', 'image', 'mimes:jpg,jpeg,png,svg,webp', 'max:2048'],
+            'qr_code'           => ['nullable', 'image', 'mimes:jpg,jpeg,png,svg,webp', 'max:2048'],
         ]);
 
         $tenantId = session('tenant_id');
@@ -75,7 +77,20 @@ class SettingsController extends Controller
             }
         }
 
+        // Handle qr_code upload
+        if ($request->hasFile('qr_code')) {
+            $qrPath = $request->file('qr_code')->store("qrcodes/tenant_{$tenantId}", 'public');
+            $validated['qr_code_url'] = $qrPath;
+        } else {
+            // Keep existing qr_code if no new file uploaded
+            $existing = $existing ?? $this->settingsService->get((int)$tenantId, 'company_settings', []);
+            if (!empty($existing['qr_code_url'])) {
+                $validated['qr_code_url'] = $existing['qr_code_url'];
+            }
+        }
+
         unset($validated['logo']); // Don't store the file object itself
+        unset($validated['qr_code']); 
         $this->settingsService->set((int)$tenantId, 'company_settings', $validated);
 
         // Sync with Tenant model

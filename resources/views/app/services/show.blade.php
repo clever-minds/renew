@@ -30,7 +30,7 @@
                         </div>
                         <div>
                             <h2 class="text-2xl font-black">{{ $service->name }}</h2>
-                            <p class="text-slate-400 font-medium opacity-80">{!! $symbol !!}{{ number_format($service->price, 2) }} / {{ ucfirst($service->billing_cycle->value) }}</p>
+                            <p class="text-slate-400 font-medium opacity-80">{!! $symbol !!}{{ number_format($service->price, 2) }} / {{ ucwords(str_replace('_', ' ', $service->billing_cycle->value)) }}</p>
                             <div class="flex items-center mt-2 space-x-3">
                                 <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest {{ $service->is_active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400' }} border border-white/10">
                                     {{ $service->is_active ? 'Active' : 'Inactive' }}
@@ -63,7 +63,7 @@
                 </div>
                 <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
                     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Cycle</p>
-                    <p class="text-xl font-black text-gray-900 uppercase tracking-tighter">{{ $service->billing_cycle->value }}</p>
+                    <p class="text-xl font-black text-gray-900 uppercase tracking-tighter">{{ str_replace('_', ' ', $service->billing_cycle->value) }}</p>
                     <p class="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-tighter">Billing Frequency</p>
                 </div>
                 <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100">

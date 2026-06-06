@@ -42,7 +42,8 @@ class InvoiceController extends Controller
                 })
                 ->editColumn('status', function($row){
                     $class = $row->status === 'paid' ? 'bg-emerald-100 text-emerald-800' : ($row->status === 'unpaid' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800');
-                    return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium '.$class.'">'.ucfirst($row->status).'</span>';
+                    $displayStatus = ucwords(strtolower(str_replace('_', ' ', $row->status)));
+                    return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium '.$class.'">'.$displayStatus.'</span>';
                 })
                 ->editColumn('due_date', function($row){
                     return \Carbon\Carbon::parse($row->due_date)->format('M d, Y');
@@ -57,7 +58,8 @@ class InvoiceController extends Controller
     public function create(): View
     {
         $clients = Client::orderBy('name')->get();
-        return view('app.invoices.create', compact('clients'));
+        $services = \App\Models\Service::where('is_active', true)->orderBy('name')->get();
+        return view('app.invoices.create', compact('clients', 'services'));
     }
 
     public function store(StoreInvoiceRequest $request): RedirectResponse
@@ -69,21 +71,28 @@ class InvoiceController extends Controller
 
         // Calculate totals
         $subtotal = 0;
+        $taxTotal = 0;
         $items = [];
 
         foreach ($data['items'] as $item) {
             $lineTotal = $item['quantity'] * $item['unit_price'];
+            $itemTaxRate = $item['tax_rate'] ?? 0;
+            $itemTaxAmount = $lineTotal * ($itemTaxRate / 100);
+            
             $subtotal += $lineTotal;
+            $taxTotal += $itemTaxAmount;
+            
             $items[] = [
                 'description' => $item['description'],
+                'hsn_code' => $item['hsn_code'] ?? null,
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'],
+                'tax_rate' => $itemTaxRate,
+                'tax_amount' => $itemTaxAmount,
                 'total' => $lineTotal,
             ];
         }
 
-        $taxRate = $data['tax_rate'] ?? 0;
-        $taxTotal = $subtotal * ($taxRate / 100);
         $total = $subtotal + $taxTotal;
 
         // Create invoice using Eloquent for notification support
@@ -95,6 +104,8 @@ class InvoiceController extends Controller
             'due_date' => $data['due_date'],
             'subtotal' => $subtotal,
             'tax_total' => $taxTotal,
+            'tax_type' => $data['tax_type'] ?? 'none',
+            'tax_rate' => 0, // No longer used at invoice level
             'total' => $total,
             'amount_paid' => 0,
             'status' => \App\Enums\InvoiceStatus::UNPAID,
@@ -104,8 +115,11 @@ class InvoiceController extends Controller
         foreach ($items as $item) {
             $invoice->items()->create([
                 'description' => $item['description'],
+                'hsn_code' => $item['hsn_code'],
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'],
+                'tax_rate' => $item['tax_rate'],
+                'tax_amount' => $item['tax_amount'],
                 'total' => $item['total'],
             ]);
         }

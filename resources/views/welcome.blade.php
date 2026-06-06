@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RenewPilot - Modern SaaS Subscription Management</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -23,8 +24,11 @@
                 <span class="text-xl font-black tracking-tight">RenewPilot</span>
             </div>
             <div class="hidden md:flex items-center space-x-8">
+                <a href="#home" class="text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors">Home</a>
+                <a href="#about" class="text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors">About</a>
                 <a href="#features" class="text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors">Features</a>
                 <a href="#pricing" class="text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors">Pricing</a>
+                <a href="#contact" class="text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors">Contact</a>
                 <div class="h-4 w-px bg-gray-200"></div>
                 @auth
                     <a href="{{ auth()->user()->is_super_admin ? route('admin.dashboard') : route('app.dashboard') }}" class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">Dashboard</a>
@@ -37,7 +41,7 @@
     </nav>
 
     <!-- Hero Section -->
-    <header class="pt-40 pb-20 px-6 relative overflow-hidden">
+    <header class="pt-40 pb-20 px-6 relative overflow-hidden" id="home">
         <div class="absolute top-0 -left-4 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
         <div class="absolute top-0 -right-4 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
         
@@ -81,6 +85,39 @@
         </div>
     </header>
 
+    <!-- About Section -->
+    <section class="py-20 px-6 bg-white" id="about">
+        <div class="max-w-7xl mx-auto text-center">
+            <h2 class="text-4xl font-black tracking-tight text-gray-900 mb-4">About RenewPilot</h2>
+            <p class="text-gray-500 font-medium max-w-2xl mx-auto">We are building the future of SaaS subscription management for agencies and service businesses. Our goal is to make billing, invoicing, and client management as effortless as possible.</p>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-24 px-6 bg-indigo-50/50" id="features">
+        <div class="max-w-7xl mx-auto text-center">
+            <h2 class="text-4xl font-black tracking-tight text-gray-900 mb-4">Powerful Features</h2>
+            <p class="text-gray-500 font-medium max-w-2xl mx-auto mb-16">Everything you need to run your agency efficiently and scale your revenue.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-10 rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <h3 class="text-xl font-black mb-4 text-gray-900">Automated Invoicing</h3>
+                    <p class="text-gray-500 font-medium leading-relaxed">Send professional invoices automatically and get paid faster with our integrated payment gateways.</p>
+                </div>
+                <div class="bg-white p-10 rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl"><i class="fas fa-users"></i></div>
+                    <h3 class="text-xl font-black mb-4 text-gray-900">Client Management</h3>
+                    <p class="text-gray-500 font-medium leading-relaxed">Keep track of all your clients, their subscriptions, and payment history in one unified dashboard.</p>
+                </div>
+                <div class="bg-white p-10 rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl"><i class="fas fa-chart-line"></i></div>
+                    <h3 class="text-xl font-black mb-4 text-gray-900">Revenue Analytics</h3>
+                    <p class="text-gray-500 font-medium leading-relaxed">Understand your MRR, churn rate, and growth metrics with detailed, actionable insights.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Pricing Section -->
     <section class="py-32 px-6 bg-[#fafafa]" id="pricing">
         <div class="max-w-7xl mx-auto">
@@ -101,7 +138,7 @@
                     
                     <div class="flex items-baseline gap-1 mb-10">
                         <span class="text-5xl font-black tracking-tighter text-gray-900">₹{{ number_format($plan->price, 0) }}</span>
-                        <span class="text-gray-400 font-bold uppercase tracking-widest text-xs">/ {{ $plan->billing_cycle->value }}</span>
+                        <span class="text-gray-400 font-bold uppercase tracking-widest text-xs">/ {{ str_replace('_', ' ', $plan->billing_cycle->value) }}</span>
                     </div>
                     
                     <ul class="mb-12 space-y-4 flex-grow">
@@ -129,7 +166,7 @@
     </section>
 
     <!-- Footer -->
-    <footer class="py-20 px-6 bg-white border-t border-gray-100">
+    <footer class="py-20 px-6 bg-white border-t border-gray-100" id="contact">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
             <div class="flex items-center space-x-2">
                 <div class="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center text-white">

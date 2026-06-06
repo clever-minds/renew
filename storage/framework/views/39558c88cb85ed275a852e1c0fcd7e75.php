@@ -14,6 +14,11 @@
     ];
     $symbol = $symbols[$currency] ?? $currency;
     $symbolRaw = html_entity_decode($symbol, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $companySettings = $settingsService->get(auth()->user()->tenant_id, 'company_settings', []);
+    $hasCompanyGst = !empty($companySettings['tax_number']);
+    
+    $descSpan = $hasCompanyGst ? 'md:col-span-4' : 'md:col-span-6';
+    $priceSpan = $hasCompanyGst ? 'md:col-span-2' : 'md:col-span-3';
 ?>
 <?php if (isset($component)) { $__componentOriginal9ac128a9029c0e4701924bd2d73d7f54 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54 = $attributes; } ?>
@@ -76,6 +81,7 @@
                 if (response.ok && result.success) {
                     const selectEl = document.getElementById('client_id');
                     const newOption = new Option(result.client.name + ' (' + (result.client.email || 'No email') + ')', result.client.id, true, true);
+                    newOption.setAttribute('data-gst', result.client.gst_number || '');
                     selectEl.add(newOption);
                     selectEl.dispatchEvent(new Event('change'));
                     
@@ -126,7 +132,7 @@
                                     class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                                 <option value="">Select a client...</option>
                                 <?php $__currentLoopData = $clients; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $client): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                    <option value="<?php echo e($client->id); ?>">
+                                    <option value="<?php echo e($client->id); ?>" data-gst="<?php echo e($client->gst_number ?? ''); ?>">
                                         <?php echo e($client->name); ?> (<?php echo e($client->email); ?>)
                                     </option>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
@@ -155,72 +161,112 @@
                             </button>
                         </div>
 
-                        <div id="items-container" class="space-y-4">
-                            <!-- Template Row -->
-                            <div class="item-row group p-5 bg-gray-50/50 rounded-2xl border border-gray-100 transition-all hover:bg-gray-50 hover:border-gray-200">
-                                <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
-                                    <div class="md:col-span-5">
-                                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Description</label>
-                                        <input type="text" name="items[0][description]" required
-                                               class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="Service or product name...">
-                                    </div>
-                                    <div class="md:col-span-2">
-                                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Quantity</label>
-                                        <input type="number" name="items[0][quantity]" required min="1" value="1"
-                                               class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm item-quantity">
-                                    </div>
-                                    <div class="md:col-span-2">
-                                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Unit Price</label>
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800 text-sm font-bold"><?php echo $symbol; ?></span>
-                                            <input type="number" name="items[0][unit_price]" required step="0.01" min="0"
-                                                   class="w-full pl-10 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm item-price" style="padding-left: 2.75rem !important;" placeholder="0.00">
+                            <div id="items-container" class="space-y-4">
+                                <!-- Template Row -->
+                                <div class="item-row group p-5 bg-gray-50/50 rounded-2xl border border-gray-100 transition-all hover:bg-gray-50 hover:border-gray-200">
+                                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                                        <div class="<?php echo e($descSpan); ?>">
+                                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Service / Description</label>
+                                            <div class="flex space-x-2">
+                                                <select class="w-1/3 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm service-select">
+                                                    <option value="">Custom...</option>
+                                                    <?php $__currentLoopData = $services; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $service): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                        <option value="<?php echo e($service->id); ?>" data-name="<?php echo e($service->name); ?>" data-price="<?php echo e($service->price); ?>" data-hsn="<?php echo e($service->hsn_code); ?>" data-tax="<?php echo e($service->tax_rate); ?>">
+                                                            <?php echo e($service->name); ?>
+
+                                                        </option>
+                                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                                </select>
+                                                <input type="text" name="items[0][description]" required
+                                                       class="w-2/3 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm item-description" placeholder="Service or product name...">
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="md:col-span-2">
-                                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Row Total</label>
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800 text-sm font-bold"><?php echo $symbol; ?></span>
-                                            <input type="number" readonly step="0.01"
-                                                   class="w-full pl-10 rounded-xl border-gray-200 bg-gray-100 text-gray-600 text-sm font-bold item-total" style="padding-left: 2.75rem !important;" value="0.00">
+                                        <div class="md:col-span-1 <?php echo e(!$hasCompanyGst ? 'hidden' : ''); ?>">
+                                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">HSN/SAC</label>
+                                            <input type="text" name="items[0][hsn_code]"
+                                                   class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm item-hsn-code" placeholder="e.g. 9983">
                                         </div>
-                                    </div>
-                                    <div class="md:col-span-1 flex items-end justify-center">
-                                        <button type="button" class="remove-item p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors" style="display: none;">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
+                                        <div class="md:col-span-1">
+                                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Qty</label>
+                                            <input type="number" name="items[0][quantity]" required min="1" value="1"
+                                                   class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm item-quantity" placeholder="0">
+                                        </div>
+                                        <div class="<?php echo e($priceSpan); ?>">
+                                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Unit Price</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"><?php echo $symbol; ?></span>
+                                                <input type="number" name="items[0][unit_price]" step="0.01" min="0" required value="0.00"
+                                                       class="w-full pl-8 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm item-price">
+                                            </div>
+                                        </div>
+                                        <div class="md:col-span-2 <?php echo e(!$hasCompanyGst ? 'hidden' : ''); ?>">
+                                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">GST Rate (%)</label>
+                                            <input type="number" name="items[0][tax_rate]" step="0.01" min="0" max="100" value="0"
+                                                   class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm item-tax-rate" placeholder="e.g. 18">
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Row Total</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800 text-sm font-bold"><?php echo $symbol; ?></span>
+                                                <input type="number" readonly step="0.01"
+                                                       class="w-full pl-8 rounded-xl border-gray-200 bg-gray-100 text-gray-600 text-sm font-bold item-total" value="0.00">
+                                            </div>
+                                        </div>
+                                        <div class="md:col-span-1 flex items-end justify-center">
+                                            <button type="button" class="remove-item p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors" style="display: none;">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
                     </div>
 
                     <!-- Totals and Settings -->
                     <div class="pt-8 border-t border-gray-100">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div class="space-y-4">
+                            <div class="<?php echo e(!$hasCompanyGst ? 'hidden' : 'space-y-4'); ?>">
                                 <div class="max-w-xs">
-                                    <label for="tax_rate" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Tax Rate (%)</label>
-                                    <input type="number" name="tax_rate" id="tax_rate" step="0.01" min="0" max="100" value="0"
-                                           class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="0.00">
+                                    <label for="tax_type" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Tax Type</label>
+                                    <select name="tax_type" id="tax_type" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-semibold">
+                                        <option value="none">Standard Tax</option>
+                                        <option value="cgst_sgst">CGST + SGST</option>
+                                        <option value="igst">IGST</option>
+                                    </select>
                                 </div>
                                 <div class="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
                                     <p class="text-xs text-indigo-700 leading-relaxed">
                                         <i class="fas fa-info-circle mr-1"></i>
-                                        Tax will be calculated automatically based on the subtotal.
+                                        Tax will be calculated automatically based on the subtotal. Select GST type for India-specific billing.
                                     </p>
                                 </div>
                             </div>
 
-                            <div class="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 space-y-3">
+                            <div class="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 space-y-3" id="totals-box">
                                 <div class="flex justify-between items-center text-sm">
                                     <span class="text-gray-500 font-medium">Subtotal</span>
                                     <span id="subtotal" class="font-bold text-gray-900"><?php echo $symbol; ?>0.00</span>
                                 </div>
-                                <div class="flex justify-between items-center text-sm">
-                                    <span class="text-gray-500 font-medium">Tax Amount</span>
-                                    <span id="tax" class="font-bold text-gray-900"><?php echo $symbol; ?>0.00</span>
+                                
+                                <div id="tax-container" class="<?php echo e(!$hasCompanyGst ? 'hidden' : ''); ?>">
+                                    <div class="flex justify-between items-center text-sm tax-row" id="tax-row-standard">
+                                        <span class="text-gray-500 font-medium">Tax Amount</span>
+                                        <span id="tax" class="font-bold text-gray-900"><?php echo $symbol; ?>0.00</span>
+                                    </div>
+                                    <div class="flex justify-between items-center text-sm tax-row hidden" id="tax-row-cgst">
+                                        <span class="text-gray-500 font-medium">CGST (<span id="cgst-rate">0</span>%)</span>
+                                        <span id="cgst-amount" class="font-bold text-gray-900"><?php echo $symbol; ?>0.00</span>
+                                    </div>
+                                    <div class="flex justify-between items-center text-sm tax-row hidden mt-1" id="tax-row-sgst">
+                                        <span class="text-gray-500 font-medium">SGST (<span id="sgst-rate">0</span>%)</span>
+                                        <span id="sgst-amount" class="font-bold text-gray-900"><?php echo $symbol; ?>0.00</span>
+                                    </div>
+                                    <div class="flex justify-between items-center text-sm tax-row hidden" id="tax-row-igst">
+                                        <span class="text-gray-500 font-medium">IGST (<span id="igst-rate">0</span>%)</span>
+                                        <span id="igst-amount" class="font-bold text-gray-900"><?php echo $symbol; ?>0.00</span>
+                                    </div>
                                 </div>
+
                                 <div class="flex justify-between items-center pt-3 border-t border-gray-200">
                                     <span class="text-lg font-extrabold text-gray-900 uppercase tracking-wider">Grand Total</span>
                                     <span id="total" class="text-2xl font-black text-indigo-600"><?php echo $symbol; ?>0.00</span>
@@ -263,6 +309,10 @@
             });
 
             // Show remove button
+            const selects = newItem.querySelectorAll('select');
+            selects.forEach(select => {
+                select.selectedIndex = 0;
+            });
             newItem.querySelector('.remove-item').style.display = 'block';
 
             container.appendChild(newItem);
@@ -281,13 +331,51 @@
         });
 
         document.addEventListener('input', function(e) {
-            if (e.target.classList.contains('item-quantity') || e.target.classList.contains('item-price')) {
+            if (e.target.classList.contains('item-quantity') || e.target.classList.contains('item-price') || e.target.classList.contains('item-tax-rate')) {
                 updateRowTotal(e.target.closest('.item-row'));
                 updateTotals();
             }
         });
+        
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('service-select')) {
+                const select = e.target;
+                const row = select.closest('.item-row');
+                const selectedOption = select.options[select.selectedIndex];
+                
+                if (select.value) {
+                    row.querySelector('.item-description').value = selectedOption.getAttribute('data-name') || '';
+                    row.querySelector('.item-hsn-code').value = selectedOption.getAttribute('data-hsn') || '';
+                    row.querySelector('.item-price').value = selectedOption.getAttribute('data-price') || '0.00';
+                    row.querySelector('.item-tax-rate').value = selectedOption.getAttribute('data-tax') || '0';
+                    
+                    updateRowTotal(row);
+                    updateTotals();
+                }
+            }
+        });
 
-        document.getElementById('tax_rate').addEventListener('input', updateTotals);
+        document.getElementById('tax_type').addEventListener('change', updateTotals);
+        
+        document.getElementById('client_id').addEventListener('change', function(e) {
+            const select = e.target;
+            if (select.selectedIndex > 0) {
+                const selectedOption = select.options[select.selectedIndex];
+                const gst = selectedOption.getAttribute('data-gst');
+                
+                if (!gst || gst.trim() === '') {
+                    // Client has no GST number, disable GST
+                    document.getElementById('tax_type').value = 'none';
+                    
+                    document.querySelectorAll('.item-tax-rate').forEach(input => {
+                        input.value = '0';
+                        updateRowTotal(input.closest('.item-row'));
+                    });
+                    
+                    updateTotals();
+                }
+            }
+        });
 
         function updateRowTotal(row) {
             const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
@@ -298,18 +386,48 @@
 
         function updateTotals() {
             let subtotal = 0;
-            document.querySelectorAll('.item-total').forEach(totalInput => {
-                subtotal += parseFloat(totalInput.value) || 0;
+            let totalTax = 0;
+            document.querySelectorAll('.item-row').forEach(row => {
+                const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
+                const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                const taxRate = parseFloat(row.querySelector('.item-tax-rate').value) || 0;
+                
+                const lineTotal = quantity * price;
+                const lineTax = lineTotal * (taxRate / 100);
+                
+                subtotal += lineTotal;
+                totalTax += lineTax;
             });
 
-            const taxRate = parseFloat(document.getElementById('tax_rate').value) || 0;
-            const tax = subtotal * (taxRate / 100);
-            const total = subtotal + tax;
+            const taxType = document.getElementById('tax_type').value;
+            const total = subtotal + totalTax;
 
             const symbol = '<?php echo e($symbolRaw); ?>';
             document.getElementById('subtotal').textContent = symbol + subtotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            document.getElementById('tax').textContent = symbol + tax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('total').textContent = symbol + total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            // Hide all tax rows first
+            document.getElementById('tax-row-standard').classList.add('hidden');
+            document.getElementById('tax-row-cgst').classList.add('hidden');
+            document.getElementById('tax-row-sgst').classList.add('hidden');
+            document.getElementById('tax-row-igst').classList.add('hidden');
+
+            if (taxType === 'cgst_sgst') {
+                const halfTax = totalTax / 2;
+                document.getElementById('tax-row-cgst').classList.remove('hidden');
+                document.getElementById('tax-row-sgst').classList.remove('hidden');
+                document.getElementById('cgst-rate').textContent = "Total";
+                document.getElementById('sgst-rate').textContent = "Total";
+                document.getElementById('cgst-amount').textContent = symbol + halfTax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('sgst-amount').textContent = symbol + halfTax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            } else if (taxType === 'igst') {
+                document.getElementById('tax-row-igst').classList.remove('hidden');
+                document.getElementById('igst-rate').textContent = "Total";
+                document.getElementById('igst-amount').textContent = symbol + totalTax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            } else {
+                document.getElementById('tax-row-standard').classList.remove('hidden');
+                document.getElementById('tax').textContent = symbol + totalTax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            }
         }
 
         // Initialize totals

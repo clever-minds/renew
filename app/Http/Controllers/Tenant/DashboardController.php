@@ -14,16 +14,43 @@ class DashboardController extends Controller
     {
         $tenantId = session('tenant_id');
 
-        // Load cached stats to prevent heavy sum() queries
-        $statsRecord = DB::table('settings')
-            ->where('tenant_id', $tenantId)
-            ->where('key', 'dashboard_stats_cache')
-            ->first();
+        // Calculate MRR dynamically
+        $activeSubscriptions = DB::table('client_subscriptions')
+            ->join('services', 'client_subscriptions.service_id', '=', 'services.id')
+            ->where('client_subscriptions.tenant_id', $tenantId)
+            ->where('client_subscriptions.status', 'active')
+            ->select('client_subscriptions.price', 'services.billing_cycle')
+            ->get();
 
-        $stats = $statsRecord ? json_decode($statsRecord->value, true) : [
-            'mrr' => 0.00,
-            'overdue_amount' => 0.00,
-            'upcoming_renewals_count' => 0
+        $mrr = 0.00;
+        foreach ($activeSubscriptions as $sub) {
+            $price = (float) $sub->price;
+            switch ($sub->billing_cycle) {
+                case 'monthly': $mrr += $price; break;
+                case 'quarterly': $mrr += $price / 3; break;
+                case 'semi_annually': $mrr += $price / 6; break;
+                case 'annually': $mrr += $price / 12; break;
+            }
+        }
+
+        // Calculate Overdue Amount
+        $overdueAmount = DB::table('invoices')
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'overdue')
+            ->sum(DB::raw('total - amount_paid'));
+
+        // Calculate Upcoming Renewals Count (next 30 days)
+        $upcomingRenewalsCount = DB::table('client_subscriptions')
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->whereNotNull('next_due_date')
+            ->where('next_due_date', '<=', now()->addDays(30))
+            ->count();
+
+        $stats = [
+            'mrr' => $mrr,
+            'overdue_amount' => (float) $overdueAmount,
+            'upcoming_renewals_count' => $upcomingRenewalsCount
         ];
 
         // High-performance direct queries for recent lists

@@ -126,13 +126,19 @@
                 @endphp
                 @if($logoSrc)
                     <div class="logo-container">
-                        <img src="{{ $logoSrc }}" alt="Logo" style="max-height: 50px; max-width: 150px; object-fit: contain;">
+                        <img src="{{ $logoSrc }}" alt="Logo" style="max-height: 50px; max-width: 250px; object-fit: contain;">
                     </div>
+                @else
+                    <div class="company-name">{{ $company['company_name'] ?? $tenant->name ?? 'RenewPilot' }}</div>
+                    @if(!empty($company['company_tagline']))
+                        <div class="company-tagline">{{ $company['company_tagline'] }}</div>
+                    @endif
                 @endif
-            @endif
-            <div class="company-name">{{ $company['company_name'] ?? $tenant->name ?? 'RenewPilot' }}</div>
-            @if(!empty($company['company_tagline']))
-                <div class="company-tagline">{{ $company['company_tagline'] }}</div>
+            @else
+                <div class="company-name">{{ $company['company_name'] ?? $tenant->name ?? 'RenewPilot' }}</div>
+                @if(!empty($company['company_tagline']))
+                    <div class="company-tagline">{{ $company['company_tagline'] }}</div>
+                @endif
             @endif
         </div>
 

@@ -129,7 +129,7 @@
                             <option value="">Select a service...</option>
                             @foreach($services as $service)
                                 <option value="{{ $service->id }}" data-price="{{ $service->price }}" data-cycle="{{ $service->billing_cycle->value }}">
-                                    {{ $service->name }} - ₹{{ number_format($service->price, 2) }}/{{ ucfirst($service->billing_cycle->value) }}
+                                    {{ $service->name }} - ₹{{ number_format($service->price, 2) }}/{{ ucwords(str_replace('_', ' ', $service->billing_cycle->value)) }}
                                 </option>
                             @endforeach
                         </select>

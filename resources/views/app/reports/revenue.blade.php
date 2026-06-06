@@ -62,7 +62,7 @@
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                 <h3 class="font-bold text-gray-800">Transaction Details</h3>
-                <button class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Export CSV</button>
+                <a href="{{ route('app.reports.revenue', ['start_date' => $startDate, 'end_date' => $endDate, 'export' => 'csv']) }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Export CSV</a>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-100">
@@ -115,7 +115,7 @@
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: {!! json_encode($revenueByMethod->keys()) !!},
+                    labels: {!! json_encode($revenueByMethod->keys()->map(function($key) { return ucwords(str_replace('_', ' ', $key)); })) !!},
                     datasets: [{
                         data: {!! json_encode($revenueByMethod->values()) !!},
                         backgroundColor: [

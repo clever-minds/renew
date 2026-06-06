@@ -30,6 +30,8 @@
                         <tr>
                             <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Name</th>
                             <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Price</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">HSN/SAC</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">GST Rate</th>
                             <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Billing Cycle</th>
                             <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
@@ -48,6 +50,8 @@
                 columns: [
                     {data: 'name', name: 'name'},
                     {data: 'price', name: 'price'},
+                    {data: 'hsn_code', name: 'hsn_code', defaultContent: '-'},
+                    {data: 'tax_rate', name: 'tax_rate', render: function(data) { return data + '%'; }},
                     {data: 'billing_cycle', name: 'billing_cycle'},
                     {data: 'action', name: 'action', orderable: false, searchable: false},
                 ],
