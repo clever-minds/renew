@@ -17,6 +17,11 @@
         'JPY' => '&yen;',
     ];
     $symbol = $currencySymbols[$currency] ?? '&#8377;';
+
+    $hasCompanyGst = !empty($company['tax_number']);
+    $hasClientGst = !empty($subscription->client->gst_number);
+    $taxRate = ($hasCompanyGst && $hasClientGst) ? ($subscription->service->tax_rate ?? 0) : 0;
+    $totalAmount = $subscription->price + ($subscription->price * $taxRate / 100);
 ?>
 <?php if (isset($component)) { $__componentOriginal9ac128a9029c0e4701924bd2d73d7f54 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54 = $attributes; } ?>
@@ -55,6 +60,10 @@
                     
                     <div class="flex flex-wrap items-center gap-3">
                         <?php if($subscription->status->value === 'active'): ?>
+                            <button onclick="openPaymentModal()" class="px-6 py-2.5 bg-indigo-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-900/20 hover:bg-indigo-600 transition-all flex items-center">
+                                <i class="fas fa-file-invoice-dollar mr-2"></i> Collect Payment
+                            </button>
+
                             <form method="POST" action="<?php echo e(route('app.subscriptions.suspend', $subscription)); ?>">
                                 <?php echo csrf_field(); ?>
                                 <button type="submit" class="px-6 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-amber-900/20 hover:bg-amber-600 transition-all">
@@ -223,6 +232,79 @@
 <?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
 <?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
 <?php endif; ?>
+
+    <!-- Record Payment Modal -->
+    <div id="payment-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Overlay -->
+            <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onclick="closePaymentModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+            <!-- Modal Box -->
+            <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-2xl shadow-xl sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-100">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-gray-800 uppercase tracking-widest">Collect Payment</h3>
+                    <button onclick="closePaymentModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fas fa-times text-base"></i>
+                    </button>
+                </div>
+                <form action="<?php echo e(route('app.subscriptions.record_payment', $subscription)); ?>" method="POST" class="p-6 space-y-4">
+                    <?php echo csrf_field(); ?>
+                    
+                    <div class="p-4 bg-indigo-50 border border-indigo-100 rounded-xl mb-4 text-xs text-indigo-700 leading-relaxed font-semibold">
+                        <i class="fas fa-info-circle mr-1"></i> Recording this payment will automatically generate the invoice for the current cycle and mark it as paid.
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Payment Amount (<?php echo $symbol; ?>)</label>
+                        <input type="text" id="payment-amount" value="<?php echo e(number_format($totalAmount, 2)); ?>" readonly
+                               class="w-full rounded-xl border-gray-200 bg-gray-50 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-bold text-gray-900 cursor-not-allowed">
+                        <input type="hidden" name="amount" value="<?php echo e(number_format($totalAmount, 2, '.', '')); ?>">
+                        <?php if($taxRate > 0): ?>
+                            <p class="text-[10px] text-emerald-600 font-bold mt-1">Total amount includes <?php echo e($taxRate); ?>% GST.</p>
+                        <?php else: ?>
+                            <p class="text-[10px] text-gray-400 mt-1">Exact invoice total.</p>
+                        <?php endif; ?>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Payment Method</label>
+                        <select name="payment_method" required class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            <option value="bank_transfer">Bank Transfer</option>
+                            <option value="upi">UPI / GPay / PhonePe</option>
+                            <option value="cash">Cash</option>
+                            <option value="card">Card Payment</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Transaction Reference (Optional)</label>
+                        <input type="text" name="transaction_reference" placeholder="e.g. TXN12345678"
+                               class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    </div>
+
+                    <div class="pt-4 flex justify-end space-x-3">
+                        <button type="button" onclick="closePaymentModal()" class="px-4 py-2 border border-gray-200 text-gray-700 text-sm font-bold rounded-xl hover:bg-gray-50 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-emerald-100 transition-all flex items-center">
+                            <i class="fas fa-check mr-2"></i> Save Payment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openPaymentModal() {
+            document.getElementById('payment-modal').classList.remove('hidden');
+        }
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+        }
+    </script>
  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>

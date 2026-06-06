@@ -17,6 +17,7 @@
         'JPY' => '&yen;',
     ];
     $symbol = $currencySymbols[$currency] ?? '&#8377;';
+    $hasCompanyGst = !empty($company['tax_number']);
 ?>
 <?php if (isset($component)) { $__componentOriginal9ac128a9029c0e4701924bd2d73d7f54 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54 = $attributes; } ?>
@@ -74,12 +75,13 @@
                                     class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                                 <option value="monthly" <?php if(old('billing_cycle', $service->billing_cycle->value) === 'monthly'): echo 'selected'; endif; ?>>Monthly</option>
                                 <option value="quarterly" <?php if(old('billing_cycle', $service->billing_cycle->value) === 'quarterly'): echo 'selected'; endif; ?>>Quarterly</option>
-                                <option value="semi-annually" <?php if(old('billing_cycle', $service->billing_cycle->value) === 'semi-annually'): echo 'selected'; endif; ?>>Semi-Annually</option>
+                                <option value="semi_annually" <?php if(old('billing_cycle', $service->billing_cycle->value) === 'semi_annually'): echo 'selected'; endif; ?>>Semi-Annually</option>
                                 <option value="annually" <?php if(old('billing_cycle', $service->billing_cycle->value) === 'annually'): echo 'selected'; endif; ?>>Annually</option>
-                                <option value="one-time" <?php if(old('billing_cycle', $service->billing_cycle->value) === 'one-time'): echo 'selected'; endif; ?>>One-Time</option>
+                                <option value="one_time" <?php if(old('billing_cycle', $service->billing_cycle->value) === 'one_time'): echo 'selected'; endif; ?>>One-Time</option>
                             </select>
                         </div>
                         
+                        <?php if($hasCompanyGst): ?>
                         <div>
                             <label for="hsn_code" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">HSN/SAC Code</label>
                             <input type="text" name="hsn_code" id="hsn_code" value="<?php echo e(old('hsn_code', $service->hsn_code)); ?>"
@@ -91,6 +93,7 @@
                             <input type="number" name="tax_rate" id="tax_rate" step="0.01" min="0" max="100" value="<?php echo e(old('tax_rate', $service->tax_rate)); ?>"
                                    class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="0.00">
                         </div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="flex items-center p-4 bg-gray-50 rounded-xl border border-gray-100">

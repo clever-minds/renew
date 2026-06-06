@@ -126,13 +126,19 @@
                 ?>
                 <?php if($logoSrc): ?>
                     <div class="logo-container">
-                        <img src="<?php echo e($logoSrc); ?>" alt="Logo" style="max-height: 50px; max-width: 150px; object-fit: contain;">
+                        <img src="<?php echo e($logoSrc); ?>" alt="Logo" style="max-height: 50px; max-width: 250px; object-fit: contain;">
                     </div>
+                <?php else: ?>
+                    <div class="company-name"><?php echo e($company['company_name'] ?? $tenant->name ?? 'RenewPilot'); ?></div>
+                    <?php if(!empty($company['company_tagline'])): ?>
+                        <div class="company-tagline"><?php echo e($company['company_tagline']); ?></div>
+                    <?php endif; ?>
                 <?php endif; ?>
-            <?php endif; ?>
-            <div class="company-name"><?php echo e($company['company_name'] ?? $tenant->name ?? 'RenewPilot'); ?></div>
-            <?php if(!empty($company['company_tagline'])): ?>
-                <div class="company-tagline"><?php echo e($company['company_tagline']); ?></div>
+            <?php else: ?>
+                <div class="company-name"><?php echo e($company['company_name'] ?? $tenant->name ?? 'RenewPilot'); ?></div>
+                <?php if(!empty($company['company_tagline'])): ?>
+                    <div class="company-tagline"><?php echo e($company['company_tagline']); ?></div>
+                <?php endif; ?>
             <?php endif; ?>
         </div>
 

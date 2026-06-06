@@ -2,8 +2,10 @@
     <x-slot name="header">
         System Settings
     </x-slot>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 
-    <div class="max-w-4xl space-y-8">
+    <div class="max-w-4xl mx-auto space-y-8">
         @if(session('success'))
             <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 text-emerald-700 text-sm font-bold">
                 <i class="fas fa-check-circle text-emerald-500 text-lg"></i>
@@ -31,7 +33,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('app.settings.company') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-8">
+            <form action="{{ route('app.settings.company') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-8" id="company-form">
                 @csrf
 
                 {{-- ── LOGO ── --}}
@@ -235,9 +237,8 @@
                         <i class="fas fa-file-contract text-[10px]"></i> Terms & Conditions
                         <span class="text-[9px] text-gray-400 normal-case font-normal tracking-normal">(Printed at bottom of invoices)</span>
                     </h4>
-                    <textarea name="terms_conditions" rows="4"
-                              class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                              placeholder="e.g. Payment is due within 14 days of invoice date. Late payments may attract a 2% monthly interest charge...">{{ $company['terms_conditions'] ?? '' }}</textarea>
+                    <div id="terms-editor-container" class="bg-white" style="height: 150px; border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem;">{!! $company['terms_conditions'] ?? '' !!}</div>
+                    <input type="hidden" name="terms_conditions" id="terms_conditions">
                 </div>
 
                 <div class="pt-2 flex justify-end">
@@ -339,5 +340,37 @@
                 reader.readAsDataURL(input.files[0]);
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var quill = new Quill('#terms-editor-container', {
+                theme: 'snow',
+                placeholder: 'e.g. Payment is due within 14 days of invoice date. Late payments may attract a 2% monthly interest charge...',
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['clean']
+                    ]
+                }
+            });
+
+            // To style the top toolbar radius to match our design
+            const toolbar = document.querySelector('.ql-toolbar');
+            if(toolbar) {
+                toolbar.style.borderTopLeftRadius = '0.75rem';
+                toolbar.style.borderTopRightRadius = '0.75rem';
+                toolbar.style.borderColor = '#e5e7eb';
+            }
+            const container = document.querySelector('.ql-container');
+            if(container) {
+                container.style.borderColor = '#e5e7eb';
+            }
+
+            document.getElementById('company-form').addEventListener('submit', function() {
+                var html = quill.root.innerHTML;
+                if(html === '<p><br></p>') html = '';
+                document.getElementById('terms_conditions').value = html;
+            });
+        });
     </script>
 </x-app-layout>

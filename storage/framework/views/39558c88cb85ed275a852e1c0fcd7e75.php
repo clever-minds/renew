@@ -171,9 +171,23 @@
                                                 <select class="w-1/3 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm service-select">
                                                     <option value="">Custom...</option>
                                                     <?php $__currentLoopData = $services; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $service): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                        <option value="<?php echo e($service->id); ?>" data-name="<?php echo e($service->name); ?>" data-price="<?php echo e($service->price); ?>" data-hsn="<?php echo e($service->hsn_code); ?>" data-tax="<?php echo e($service->tax_rate); ?>">
-                                                            <?php echo e($service->name); ?>
-
+                                                        <?php
+                                                            $cycleLabel = ucfirst(str_replace('_', '-', $service->billing_cycle->value));
+                                                            $startDate = \Carbon\Carbon::now();
+                                                            $endDate = match ($service->billing_cycle) {
+                                                                \App\Enums\BillingCycle::MONTHLY => $startDate->copy()->addMonth()->subDay(),
+                                                                \App\Enums\BillingCycle::QUARTERLY => $startDate->copy()->addMonths(3)->subDay(),
+                                                                \App\Enums\BillingCycle::SEMI_ANNUALLY => $startDate->copy()->addMonths(6)->subDay(),
+                                                                \App\Enums\BillingCycle::ANNUALLY => $startDate->copy()->addYear()->subDay(),
+                                                                \App\Enums\BillingCycle::ONE_TIME => null,
+                                                            };
+                                                            $dateStr = '';
+                                                            if ($endDate) {
+                                                                $dateStr = ' [' . $startDate->format('d M Y') . ' to ' . $endDate->format('d M Y') . ']';
+                                                            }
+                                                        ?>
+                                                        <option value="<?php echo e($service->id); ?>" data-name="<?php echo e($service->name); ?> (<?php echo e($cycleLabel); ?>)<?php echo e($dateStr); ?>" data-price="<?php echo e($service->price); ?>" data-hsn="<?php echo e($service->hsn_code); ?>" data-tax="<?php echo e($service->tax_rate); ?>">
+                                                            <?php echo e($service->name); ?> (<?php echo e($cycleLabel); ?>)
                                                         </option>
                                                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                                 </select>
@@ -195,8 +209,8 @@
                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Unit Price</label>
                                             <div class="relative">
                                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"><?php echo $symbol; ?></span>
-                                                <input type="number" name="items[0][unit_price]" step="0.01" min="0" required value="0.00"
-                                                       class="w-full pl-8 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm item-price">
+                                                <input type="number" name="items[0][unit_price]" step="0.01" min="0" required value="0.00" style="padding-left: 1.75rem !important;"
+                                                       class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm item-price">
                                             </div>
                                         </div>
                                         <div class="md:col-span-2 <?php echo e(!$hasCompanyGst ? 'hidden' : ''); ?>">
@@ -207,9 +221,9 @@
                                         <div class="md:col-span-2">
                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Row Total</label>
                                             <div class="relative">
-                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800 text-sm font-bold"><?php echo $symbol; ?></span>
-                                                <input type="number" readonly step="0.01"
-                                                       class="w-full pl-8 rounded-xl border-gray-200 bg-gray-100 text-gray-600 text-sm font-bold item-total" value="0.00">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold"><?php echo $symbol; ?></span>
+                                                <input type="number" name="items[0][total]" readonly value="0.00" style="padding-left: 1.75rem !important;"
+                                                       class="w-full bg-gray-50 rounded-xl border-gray-200 text-gray-600 text-sm font-bold item-total cursor-not-allowed">
                                             </div>
                                         </div>
                                         <div class="md:col-span-1 flex items-end justify-center">

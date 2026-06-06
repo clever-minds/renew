@@ -13,6 +13,7 @@
     $symbol = $currencySymbols[$company['currency'] ?? 'INR'] ?? ($company['currency'] ?? '₹');
     // Normalize status — it may be an Enum object or a plain string
     $invoiceStatus = is_string($invoice->status) ? $invoice->status : $invoice->status->value;
+    $hasCompanyGst = !empty($company['tax_number']);
 ?>
 <?php if (isset($component)) { $__componentOriginal9ac128a9029c0e4701924bd2d73d7f54 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54 = $attributes; } ?>
@@ -216,10 +217,14 @@
                         <thead>
                             <tr>
                                 <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest">Description</th>
+                                <?php if($hasCompanyGst): ?>
                                 <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-center w-24">HSN/SAC</th>
+                                <?php endif; ?>
                                 <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-center w-16">Qty</th>
                                 <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-right w-28">Price</th>
+                                <?php if($hasCompanyGst): ?>
                                 <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-right w-24">GST %</th>
+                                <?php endif; ?>
                                 <th class="py-3 border-b-2 border-gray-900 text-[10px] font-black text-gray-900 uppercase tracking-widest text-right w-28">Total</th>
                             </tr>
                         </thead>
@@ -227,12 +232,14 @@
                             <?php $__currentLoopData = $items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <tr>
                                 <td class="py-5 pr-4">
-                                    <p class="text-sm font-bold text-gray-900"><?php echo e($item->description); ?></p>
+                                    <p class="text-sm font-bold text-gray-900 whitespace-pre-wrap"><?php echo nl2br(e($item->description)); ?></p>
                                 </td>
+                                <?php if($hasCompanyGst): ?>
                                 <td class="py-5 text-center text-sm font-medium text-gray-600">
                                     <?php echo e($item->hsn_code ?? '-'); ?>
 
                                 </td>
+                                <?php endif; ?>
                                 <td class="py-5 text-center text-sm font-medium text-gray-600">
                                     <?php echo e((int)$item->quantity); ?>
 
@@ -241,9 +248,11 @@
                                     <?php echo e($symbol); ?><?php echo e(number_format($item->unit_price, 2)); ?>
 
                                 </td>
+                                <?php if($hasCompanyGst): ?>
                                 <td class="py-5 text-right text-sm font-medium text-gray-600">
                                     <?php echo e(number_format($item->tax_rate, 2)); ?>%
                                 </td>
+                                <?php endif; ?>
                                 <td class="py-5 text-right text-sm font-black text-gray-900">
                                     <?php echo e($symbol); ?><?php echo e(number_format($item->total, 2)); ?>
 
@@ -322,8 +331,8 @@
                             $bankAddress = 'Vasna Road';
                         }
                     ?>
-                    <div class="flex justify-between items-start gap-8">
-                        <div class="flex-1">
+                    <div class="flex justify-between items-start gap-4 w-full">
+                        <div class="w-[35%]">
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Payment Details</p>
                             <div class="space-y-1">
                                 <?php if(!empty($bankName)): ?> <p class="text-xs font-semibold text-gray-700"><span class="text-gray-400 font-normal w-28 inline-block">Bank Name:</span> <?php echo e($bankName); ?></p> <?php endif; ?>
@@ -336,7 +345,7 @@
                         </div>
 
                         <?php if($hasQrCode || !$hasBankDetails): ?>
-                        <div class="w-32 flex-shrink-0 flex justify-center">
+                        <div class="w-[15%] flex justify-center">
                             <div class="p-2 border-2 border-gray-100 rounded-xl bg-white inline-block">
                                 <?php if($hasQrCode): ?>
                                     <img src="<?php echo e(asset('storage/' . $company['qr_code_url'])); ?>" alt="Payment QR" class="w-24 h-24 object-contain">
@@ -347,12 +356,12 @@
                         </div>
                         <?php endif; ?>
                         
-                        <div class="flex-1">
+                        <div class="w-[50%] pl-4">
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Terms & Conditions</p>
-                            <p class="text-xs text-gray-500 leading-relaxed font-medium">
-                                <?php echo e($company['terms_conditions'] ?? 'Please remit payment within 14 days of receiving this invoice. There will be a 1.5% interest charge per month on late invoices. Thank you for your business!'); ?>
+                            <div class="text-[10px] text-gray-500 font-medium leading-relaxed mt-3 terms-text prose prose-sm">
+                                <?php echo $company['terms_conditions'] ?? 'Please remit payment within 14 days of receiving this invoice. There will be a 1.5% interest charge per month on late invoices. Thank you for your business!'; ?>
 
-                            </p>
+                            </div>
                         </div>
                     </div>
                 </div>

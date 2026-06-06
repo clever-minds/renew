@@ -15,6 +15,9 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Enums\BillingCycle;
 use App\Enums\SubscriptionStatus;
+use App\Services\Billing\InvoiceService;
+use App\Models\Payment;
+use App\Enums\InvoiceStatus;
 
 class ClientSubscriptionController extends Controller
 {
@@ -150,5 +153,61 @@ class ClientSubscriptionController extends Controller
     {
         $subscription->update(['status' => SubscriptionStatus::ACTIVE->value]);
         return back()->with('success', 'Subscription reactivated.');
+    }
+
+    public function generateInvoice(ClientSubscription $subscription, InvoiceService $invoiceService): RedirectResponse
+    {
+        if ($subscription->status !== SubscriptionStatus::ACTIVE) {
+            return back()->with('error', 'Cannot generate invoice for inactive subscription.');
+        }
+
+        try {
+            $invoice = $invoiceService->generateFromSubscription($subscription);
+            return redirect()->route('app.invoices.show', $invoice)->with('success', 'Invoice generated successfully from subscription.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to generate invoice: ' . $e->getMessage());
+        }
+    }
+
+    public function recordPayment(Request $request, ClientSubscription $subscription, InvoiceService $invoiceService): RedirectResponse
+    {
+        if ($subscription->status !== SubscriptionStatus::ACTIVE) {
+            return back()->with('error', 'Cannot record payment for inactive subscription.');
+        }
+
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'payment_method' => 'required|string',
+            'transaction_reference' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            // First generate the invoice
+            $invoice = $invoiceService->generateFromSubscription($subscription);
+            
+            // Then record the payment against it
+            Payment::create([
+                'tenant_id' => session('tenant_id'),
+                'invoice_id' => $invoice->id,
+                'amount' => $validated['amount'],
+                'payment_method' => $validated['payment_method'],
+                'transaction_reference' => $validated['transaction_reference'],
+                'payment_date' => now(),
+            ]);
+
+            $invoice->amount_paid += $validated['amount'];
+            
+            if ($invoice->amount_paid >= $invoice->total) {
+                $invoice->status = InvoiceStatus::PAID;
+            } elseif ($invoice->amount_paid > 0) {
+                $invoice->status = InvoiceStatus::PARTIAL;
+            }
+            
+            $invoice->save();
+
+            return back()->with('success', 'Invoice generated and payment recorded successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to process payment: ' . $e->getMessage());
+        }
     }
 }

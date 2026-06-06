@@ -17,6 +17,7 @@
         'JPY' => '&yen;',
     ];
     $symbol = $currencySymbols[$currency] ?? '&#8377;';
+    $hasCompanyGst = !empty($company['tax_number']);
 @endphp
 <x-app-layout>
     <x-slot name="header">
@@ -65,12 +66,13 @@
                                     class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                                 <option value="monthly" @selected(old('billing_cycle', $service->billing_cycle->value) === 'monthly')>Monthly</option>
                                 <option value="quarterly" @selected(old('billing_cycle', $service->billing_cycle->value) === 'quarterly')>Quarterly</option>
-                                <option value="semi-annually" @selected(old('billing_cycle', $service->billing_cycle->value) === 'semi-annually')>Semi-Annually</option>
+                                <option value="semi_annually" @selected(old('billing_cycle', $service->billing_cycle->value) === 'semi_annually')>Semi-Annually</option>
                                 <option value="annually" @selected(old('billing_cycle', $service->billing_cycle->value) === 'annually')>Annually</option>
-                                <option value="one-time" @selected(old('billing_cycle', $service->billing_cycle->value) === 'one-time')>One-Time</option>
+                                <option value="one_time" @selected(old('billing_cycle', $service->billing_cycle->value) === 'one_time')>One-Time</option>
                             </select>
                         </div>
                         
+                        @if($hasCompanyGst)
                         <div>
                             <label for="hsn_code" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">HSN/SAC Code</label>
                             <input type="text" name="hsn_code" id="hsn_code" value="{{ old('hsn_code', $service->hsn_code) }}"
@@ -82,6 +84,7 @@
                             <input type="number" name="tax_rate" id="tax_rate" step="0.01" min="0" max="100" value="{{ old('tax_rate', $service->tax_rate) }}"
                                    class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="0.00">
                         </div>
+                        @endif
                     </div>
 
                     <div class="flex items-center p-4 bg-gray-50 rounded-xl border border-gray-100">

@@ -58,6 +58,8 @@ Route::middleware('auth')->group(function () {
         
         Route::post('subscriptions/{subscription}/suspend', [ClientSubscriptionController::class, 'suspend'])->name('subscriptions.suspend');
         Route::post('subscriptions/{subscription}/activate', [ClientSubscriptionController::class, 'activate'])->name('subscriptions.activate');
+        Route::post('subscriptions/{subscription}/invoice', [ClientSubscriptionController::class, 'generateInvoice'])->name('subscriptions.invoice');
+        Route::post('subscriptions/{subscription}/record-payment', [ClientSubscriptionController::class, 'recordPayment'])->name('subscriptions.record_payment');
         Route::resource('subscriptions', ClientSubscriptionController::class);
 
         Route::get('invoices/{invoice}/download', [InvoiceController::class, 'downloadPdf'])->name('invoices.download');

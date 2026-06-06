@@ -11,6 +11,7 @@
         'JPY' => '¥',
     ];
     $symbol = $currencySymbols[$company['currency'] ?? 'INR'] ?? ($company['currency'] ?? '₹');
+    $hasCompanyGst = !empty($company['tax_number']);
 @endphp
 <!DOCTYPE html>
 <html>
@@ -352,21 +353,29 @@
             <thead>
                 <tr>
                     <th style="width: 35%;">Description</th>
+                    @if($hasCompanyGst)
                     <th style="width: 15%; text-align: center;">HSN/SAC</th>
+                    @endif
                     <th style="width: 10%; text-align: center;">Qty</th>
                     <th style="width: 15%; text-align: right;">Price</th>
+                    @if($hasCompanyGst)
                     <th style="width: 10%; text-align: right;">GST %</th>
+                    @endif
                     <th style="width: 15%; text-align: right;">Total</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($items as $item)
                 <tr>
-                    <td class="item-desc">{{ $item->description }}</td>
+                    <td class="item-desc">{!! nl2br(e($item->description)) !!}</td>
+                    @if($hasCompanyGst)
                     <td class="item-qty" style="text-align: center;">{{ $item->hsn_code ?? '-' }}</td>
+                    @endif
                     <td class="item-qty" style="text-align: center;">{{ (int)$item->quantity }}</td>
                     <td class="item-price" style="text-align: right;">{{ $symbol }}{{ number_format($item->unit_price, 2) }}</td>
+                    @if($hasCompanyGst)
                     <td class="item-qty" style="text-align: right;">{{ number_format($item->tax_rate, 2) }}%</td>
+                    @endif
                     <td class="item-total" style="text-align: right;">{{ $symbol }}{{ number_format($item->total, 2) }}</td>
                 </tr>
                 @endforeach
@@ -457,7 +466,7 @@
             @endphp
             <table class="footer-table">
                 <tr>
-                    <td style="width: {{ $qrData ? '40%' : '50%' }};">
+                    <td style="width: {{ $qrData ? '35%' : '50%' }}; padding-right: 15px;">
                         <div class="section-title">Payment Details</div>
                         <div class="footer-text">
                             @if(!empty($bankName)) <span class="footer-label">Bank Name:</span> <strong style="color: #111827;">{{ $bankName }}</strong><br> @endif
@@ -467,16 +476,16 @@
                         </div>
                     </td>
                     @if($qrData)
-                    <td style="width: 20%; text-align: center; vertical-align: middle; padding-right: 20px;">
+                    <td style="width: 15%; text-align: center; vertical-align: middle; padding-right: 20px;">
                         <div style="padding: 5px; border: 2px solid #4b5563; border-radius: 8px; display: inline-block; background-color: #fff;">
                             <img src="{{ $qrData }}" style="width: 80px; height: 80px; object-fit: contain;">
                         </div>
                     </td>
                     @endif
-                    <td style="width: {{ $qrData ? '40%' : '50%' }};">
+                    <td style="width: {{ $qrData ? '50%' : '50%' }};">
                         <div class="section-title">Terms & Conditions</div>
                         <div class="footer-text font-medium">
-                            {{ $company['terms_conditions'] ?? 'Please remit payment within 14 days of receiving this invoice. There will be a 1.5% interest charge per month on late invoices. Thank you for your business!' }}
+                            {!! $company['terms_conditions'] ?? 'Please remit payment within 14 days of receiving this invoice. There will be a 1.5% interest charge per month on late invoices. Thank you for your business!' !!}
                         </div>
                     </td>
                 </tr>
